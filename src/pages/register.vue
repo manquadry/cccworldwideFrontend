@@ -5,6 +5,8 @@ import { default as registerMultistepIllustrationDark, default as registerMultis
 import registerMultistepBgDark from '@images/pages/register-multistep-bg-dark.png'
 import registerMultistepBgLight from '@images/pages/register-multistep-bg-light.png'
 
+
+
 const registerMultistepBg = useGenerateImageVariant(registerMultistepBgLight, registerMultistepBgDark)
 const currentStep = ref(0)
 const isPasswordVisible = ref(false)
@@ -64,55 +66,58 @@ const form = ref({
   sname: '',
   fname: '',
   mname: '',
-  Gender: '',
+  Gender: 'Select your gender',
   dob: '',
-  MStatus: '',
-  VineyardStatus: '',
-  title: '',
+  MStatus: 'Select status',
+  VineyardStatus: 'Select Vineyard status',
+  title: 'Select present title',
   dot: '',
   selectedMinistry: 'Select Ministry',
   mobile: '',
   address: '',
   selectedCountry: 'Select Country of residence',
+  selectedState: 'Select state of residence',
+  selectedchurchCountry: 'Select Country',
+  selectedChurchState: 'Select state',
   state: '',
   city: '',
   Country: '',
   parish: '',
+  getTitleByGendervalue: '',
 
   // Add other form fields as needed
   ministryList: [],
   countryList: [],
+  stateList: [],
+  churchStateList: [],
+  titleList: [],
 })
 
-const fetchCountries = async () => {
+async function fetchCountries() {
   try {
     // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
-    const response = await api.get('/GetCountries')
-    const data = response.data
-
+    const response=await api.get('/GetCountries')
+    const data=response.data
+    if(data.countries&&data.countries.length>0) {
     
 
-    if (data.countries && data.countries.length > 0) {
-      // form.value.countryList = data.countries.map(country => ({
-      //   name: country.name,
-      //   flagPath: country.flag_img,
-      // }))
-      form.value.countryList = data.countries.map(country => country.name)
+      form.value.countryList = data.countries.map(country => ({
+        id: country.id,
+        name: country.name,
+        flag_img: country.flag_img,
+        states: country.states,
+      }))
     }
-    
 
-  } catch (error) {
+
+  } catch(error) {
     console.error('Error fetching data:', error)
   }
 }
 
 
-
-
 const getFormData = () => {
   // Gather all form data here
- 
-
 
 
   // Display the form data in an alert for debugging
@@ -172,6 +177,7 @@ const register =    () => {
 }
 
 const fetchMinistryFromApi = async () => {
+  
   try {
     // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
     const response = await api.get('/AllMinistry')
@@ -192,13 +198,98 @@ const fetchMinistryFromApi = async () => {
   }
 }
 
+const getTitleByGender = async getByGendervalue => {
+  
+  try {
+    // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
+    const response = await api.get(`/getTitleByGender/${getByGendervalue}`)
+    const data = response.data.titles 
 
+  
 
+    if(data&&data.length>0) {
+    
+
+      form.value.titleList = data.map(genderTitles => ({
+        level: genderTitles.level,
+        title: genderTitles.title,
+       
+      }))
+    }
+    console.log( form.value.titleList)
+  
+  
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
 
 
 onMounted(() => {
   fetchMinistryFromApi()
   fetchCountries()
+})
+
+const  getResidentialState = () => {
+  form.value.stateList = []
+  form.value.selectedState = 'Select state of residence'
+  if (form.value.selectedCountry) {
+    
+    try {
+      const data=form.value.selectedCountry.states
+      
+      if(Array.isArray(data) && data.length>0){
+        form.value.stateList = data.map(countryState => ({
+          country_id: countryState.country_id,
+          name: countryState.name,
+        }))
+      }
+    } catch (error) {
+      
+    }
+  }
+}
+
+const  getChurchState = () => {
+  if (form.value.selectedchurchCountry) {
+
+    form.value.churchStateList = []
+    form.value.selectedChurchState = 'Select state'
+  
+    try {
+      const data=form.value.selectedchurchCountry.states
+      
+      if(Array.isArray(data) && data.length>0){
+        form.value.churchStateList = data.map(churchState => ({
+          country_id: churchState.country_id,
+          name: churchState.name,
+        }))
+       
+      }
+
+    } catch (error) {
+      
+    }
+  }
+}
+
+const  getGenderTitle = () => {
+  if (form.value.Gender) {
+
+    const gender = form.value.Gender
+
+    getTitleByGender(gender)
+
+  
+  }
+}
+
+
+watchEffect(() => {
+  getResidentialState()
+  getChurchState()
+  getGenderTitle()
+ 
 })
 </script>
 
@@ -358,6 +449,7 @@ onMounted(() => {
                     label="Gender"
                     :items="['Male', 'Female']"
                     placeholder=" Select your gender"
+                    @change="getGenderTitle"
                   />
                 </VCol>
 
@@ -388,17 +480,20 @@ onMounted(() => {
                   <AppSelect
                     v-model="form.MStatus"
                     label="Member Status"
-                    placeholder="Select status "
+                    placeholder=" Select status "
                     :items="['Member/Laity', 'Vineyard Worker']"
                   />
                 </VCol>
 
-                <VCol cols="12">
+                <VCol
+                  v-if="form.MStatus == 'Vineyard Worker'"
+                  cols="12"
+                >
                   <AppSelect
                     v-model="form.VineyardStatus"
                     label="Vineyard Status"
-                    placeholder="Select status "
-                    :items="['Shepherd','Asst. Shepherd','Wolider','Church Worker','Wolima']"
+                    placeholder=" Select Vineyard status "
+                    :items="['Shepherd','Asst. Shepherd','Wolider','Wolima','Church Worker','Pastor']"
                   />
                 </VCol>
 
@@ -409,8 +504,7 @@ onMounted(() => {
                   <AppSelect
                     v-model="form.title"
                     label="Present Title"
-                    placeholder="Select Title"
-                    :items="['Brother','Evangelist','Elder Sister','Snr Elder Sister','Sister','Senior Evangelist','Snr Sister','Evangelist','Senior Evangelist','Cape Eld. Brother','Sup/Snr/Pro/E/Sister']"
+                    :items="form.titleList"
                   />
                 </VCol>
 
@@ -444,17 +538,16 @@ onMounted(() => {
               <p class="text-sm">
                 Enter Your contact details
               </p>
-
               <VRow>
                 <VCol
                   cols="12"
                   md="6"
                 >
-                  <AppTextField
-                    v-model="form.mobile"
-                    type="number"
-                    label="Phone Mobile"
-                    placeholder="Enter your Mobile number"
+                  <VPhoneInput
+                    label="WhatsApp Phone number"
+                    country-label="Country"
+                    country-aria-label="Country for phone number"
+                    invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                   />
                 </VCol>
 
@@ -462,40 +555,44 @@ onMounted(() => {
                   cols="12"
                   md="6"
                 >
-                  <AppTextField
-                    v-model="form.mobile"
-                    type="number"
-                    label="Alternative Mobile number"
-                    placeholder="Enter your Alternative Mobile number"
+                  <VPhoneInput
+                    label="Alternative Phone number"
+                    country-label="Country"
+                    country-aria-label="Country for phone number"
+                    invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                   />
                 </VCol>
 
                 <VCol cols="12">
                   <AppTextField
                     v-model="form.address"
-                    label="Residence Address"
-                    placeholder="Enter your Residencial address"
+                    label="Residential Address"
+                    placeholder="Residential Address Street number and name"
                   />
                 </VCol>
-
                 <VCol cols="12">
-                  <AppSelect
+                  <!--
+                    <pre>{{ form.countryList }}</pre>
+                    <pre>{{ form.selectedCountry }}</pre>
+                  -->
+                  <AppCombobox
                     v-model="form.selectedCountry"
                     label="Country"
-                    placeholder="Select your Country of Residence"
                     :items="form.countryList"
+                    item-title="name"
+                    item-value="id"
+                    @change="getResidentialState"
                   />
                 </VCol>
-
                 <VCol
                   cols="12"
                   md="6"
                 >
                   <AppSelect
-                    v-model="form.state"
+                    v-model="form.selectedState"
                     label="State"
-                    :items="['New York', 'California', 'Florida', 'Washington', 'Texas']"
-                    placeholder="Select your State"
+                    :items="form.stateList"
+                    item-title="name"
                   />
                 </VCol>
 
@@ -506,7 +603,7 @@ onMounted(() => {
                   <AppTextField
                     v-model="form.city"
                     label="City"
-                    placeholder="Enter your Residencial City"
+                    placeholder="Enter your Residenctial City"
                   />
                 </VCol>
               </VRow>
@@ -521,11 +618,13 @@ onMounted(() => {
               </p>
               <VRow>
                 <VCol cols="12">
-                  <AppSelect
-                    v-model="form.Country"
+                  <AppCombobox
+                    v-model="form.selectedchurchCountry"
                     label="Country"
-                    placeholder="Select Country of church"
-                    :items="['Nigeria', 'Ghana', 'Mali', 'Togo', 'Congo']"
+                    :items="form.countryList"
+                    item-title="name"
+                    item-value="id"
+                    @change="getChurchState"
                   />
                 </VCol>
 
@@ -534,14 +633,18 @@ onMounted(() => {
                   md="4"
                 >
                   <AppSelect
-                    v-model="form.state"
+                    v-model="form.selectedChurchState"
                     label="State"
-                    :items="['New York', 'California', 'Florida', 'Washington', 'Texas']"
-                    placeholder="Select your State"
+                    :items="form.churchStateList"
+                    item-title="name"
+                    placeholder=" Select state "
                   />
                 </VCol>
 
-                <VCol cols="12">
+                <VCol
+                  cols="6"
+                  md="4"
+                >
                   <AppSelect
                     v-model="form.parish"
                     label="Parish"
@@ -596,6 +699,8 @@ onMounted(() => {
   </VRow>
 </template>
 
+
+
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth.scss";
 
@@ -605,3 +710,5 @@ onMounted(() => {
 meta:
   layout: blank
 </route>
+
+
