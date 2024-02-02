@@ -756,6 +756,7 @@ mock.onGet(/\/apps\/users\/\d+/).reply(config => {
   
   return [404]
 })
+
 mock.onDelete(/\/apps\/users\/\d+/).reply(config => {
   // Get user id from URL
   const userId = config.url?.substring(config.url.lastIndexOf('/') + 1)

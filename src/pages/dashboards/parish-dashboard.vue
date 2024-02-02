@@ -1,9 +1,11 @@
 <script setup>
+import { VDataTableServer } from 'vuetify/labs/VDataTable'
 import { paginationMeta } from '@/@fake-db/utils'
 import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
 import { useUserListStore } from '@/views/apps/user/useUserListStore'
 import { avatarText } from '@core/utils/formatters'
-import { VDataTableServer } from 'vuetify/labs/VDataTable'
+import api from '@/apiservices/api'
+import { onMounted, ref } from 'vue'
 
 
 const userListStore = useUserListStore()
@@ -132,7 +134,7 @@ const status = [
 
 const resolveUserRoleVariant = role => {
   const roleLowerCase = role.toLowerCase()
-  if (roleLowerCase === 'client')
+  if (roleLowerCase === 'subscriber')
     return {
       color: 'warning',
       icon: 'tabler-circle-check',
@@ -228,8 +230,10 @@ const deleteUser = id => {
   fetchUsers()
 }
 
-watchEffect(() => {
-  console.log('Users data table====>:', users)
+onMounted(() => {
+  fetchMinistryFromApi()
+  fetchCountries()
+  fetchParishes()
 })
 </script>
 
@@ -356,7 +360,7 @@ watchEffect(() => {
                 prepend-icon="tabler-plus"
                 @click="isAddNewUserDrawerVisible = true"
               >
-                Add New User
+                Add Parish
               </VBtn>
             </div>
           </VCardText>
@@ -376,11 +380,6 @@ watchEffect(() => {
             <!-- User -->
             <template #item.user="{ item }">
               <div class="d-flex align-center">
-                <!--
-                  <pre>{{ JSON.stringify(item, null, 2) }}
-                  </pre>
-                --> 
-
                 <VAvatar
                   size="34"
                   :variant="!item.raw.avatar ? 'tonal' : undefined"

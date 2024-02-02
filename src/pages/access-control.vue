@@ -46,7 +46,7 @@ import EcommerceTransactions from '@/views/dashboards/ecommerce/EcommerceTransac
         >
           <EcommerceExpensesRadialBarCharts />
         </VCol>
-
+        
         <!-- 👉 Total Profit Line -->
         <VCol
           cols="12"

@@ -5,19 +5,19 @@ import { defineStore } from 'pinia'
 export const useUserListStore = defineStore('UserListStore', {
   actions: {
     // 👉 Fetch users data
-    fetchUsers(params) { return api.get('/apps/users/list', { params }) },
+    // fetchUsers(params) { return api.get('/apps/users/list', { params }) },
 
-    // fetchUsers(params) { return api.get('/Allmember', { params }) },
+    fetchUsers(params) { return api.get('/Allmember', { params }) },
 
-    // 👉 Add User
-    addUser(userData) {
-      return new Promise((resolve, reject) => {
-        axios.post('/apps/users/user', {
-          user: userData,
-        }).then(response => resolve(response))
-          .catch(error => reject(error))
-      })
-    },
+    // // 👉 Add User
+    // addUser(userData) {
+    //   return new Promise((resolve, reject) => {
+    //     axios.post('/apps/users/user', {
+    //       user: userData,
+    //     }).then(response => resolve(response))
+    //       .catch(error => reject(error))
+    //   })
+    // },
 
     // 👉 fetch single user
     fetchUser(id) {
@@ -34,3 +34,12 @@ export const useUserListStore = defineStore('UserListStore', {
     },
   },
 })
+
+// export const avatarText = value => {
+//   if (!value)
+//     return ''
+//   const nameArray = value.split(' ')
+  
+//   return nameArray.map(word => word.charAt(0).toUpperCase()).join('')
+// }
+

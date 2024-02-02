@@ -1,10 +1,9 @@
 <script setup>
 import { paginationMeta } from '@/@fake-db/utils'
+import { useUserListStore } from '@/apiservices/membersList'
 import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
-import { useUserListStore } from '@/views/apps/user/useUserListStore'
-import { avatarText } from '@core/utils/formatters'
-import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
+import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 const userListStore = useUserListStore()
 const searchQuery = ref('')
@@ -23,33 +22,82 @@ const options = ref({
   search: undefined,
 })
 
+
+// Retrieve stored data from local storage on component mount
+const storedData = JSON.parse(localStorage.getItem('tableData') || '[]')
+
+users.value = storedData
+
+// Function to filter users based on search query
+const filteredUsers = computed(() => {
+  return users.value.filter(user => {
+
+    const fullNameMatch = user.fullName.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    // Add additional keys for filtering
+    const emailMatch = user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+
+    const genderMatch = user.gender.toLowerCase() === searchQuery.value.toLowerCase()
+
+    const roleMatch = user.role.toLowerCase() === searchQuery.value.toLowerCase()
+
+
+    // Combine the results using logical OR (||) for flexibility
+    return fullNameMatch || emailMatch || genderMatch || roleMatch
+
+    // Add more conditions with logical OR (||) as needed
+  })
+})
+
+
+
 // Headers
 const headers = [
   {
-    title: 'User',
+    title: 'Member',
     key: 'user',
   },
+
+  {
+    title: 'Phone Number',
+    key: 'mobile',
+  },
+
+  // {
+  //   title: 'Name',
+  //   value: 'fullName',
+  // },
+  {
+    title: 'Gender',
+    value: 'gender',
+  },
+  
+  // {
+  //   title: 'email',
+  //   key: 'email',
+  // },
+
   {
     title: 'Role',
     key: 'role',
   },
-  {
-    title: 'Plan',
-    key: 'plan',
-  },
-  {
-    title: 'Billing',
-    key: 'billing',
-  },
-  {
-    title: 'Status',
-    key: 'status',
-  },
-  {
-    title: 'Actions',
-    key: 'actions',
-    sortable: false,
-  },
+
+ 
+
+  // {
+  //   title: 'Billing',
+  //   key: 'billing',
+  // },
+  // {
+  //   title: 'Status',
+  //   key: 'status',
+  // },
+  // {
+  //   title: 'Actions',
+  //   key: 'actions',
+  //   sortable: false,
+  // },
 ]
 
 // 👉 Fetching users
@@ -62,6 +110,12 @@ const fetchUsers = () => {
     options: options.value,
   }).then(response => {
     users.value = response.data.users
+
+    // Store data in local storage
+
+    localStorage.setItem('tableData', JSON.stringify(response.data.users))
+
+    console.log('<======Data=====>', response)
     totalPage.value = response.data.totalPage
     totalUsers.value = response.data.totalUsers
     options.value.page = response.data.page
@@ -79,20 +133,8 @@ const roles = [
     value: 'admin',
   },
   {
-    title: 'Author',
-    value: 'author',
-  },
-  {
-    title: 'Editor',
-    value: 'editor',
-  },
-  {
-    title: 'Maintainer',
-    value: 'maintainer',
-  },
-  {
-    title: 'Subscriber',
-    value: 'subscriber',
+    title: 'Client',
+    value: 'client',
   },
 ]
 
@@ -132,7 +174,7 @@ const status = [
 
 const resolveUserRoleVariant = role => {
   const roleLowerCase = role.toLowerCase()
-  if (roleLowerCase === 'client')
+  if (roleLowerCase === 'subscriber')
     return {
       color: 'warning',
       icon: 'tabler-circle-check',
@@ -227,45 +269,44 @@ const deleteUser = id => {
   // refetch User
   fetchUsers()
 }
-
-watchEffect(() => {
-  console.log('Users data table====>:', users)
-})
 </script>
 
 <template>
   <section>
     <VRow>
-      <VCol
+      <!--
+        <VCol
         v-for="meta in userListMeta"
         :key="meta.title"
         cols="12"
         sm="6"
         lg="3"
-      >
+        >
+    
         <VCard>
-          <VCardText class="d-flex justify-space-between">
-            <div>
-              <span>{{ meta.title }}</span>
-              <div class="d-flex align-center gap-2 my-1">
-                <h6 class="text-h4">
-                  {{ meta.stats }}
-                </h6>
-                <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">( {{ meta.percentage > 0 ? '+' : '' }} {{ meta.percentage }}%)</span>
-              </div>
-              <span>{{ meta.subtitle }}</span>
-            </div>
+        <VCardText class="d-flex justify-space-between">
+        <div>
+        <span>{{ meta.title }}</span>
+        <div class="d-flex align-center gap-2 my-1">
+        <h6 class="text-h4">
+        {{ meta.stats }}
+        </h6>
+        <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">( {{ meta.percentage > 0 ? '+' : '' }} {{ meta.percentage }}%)</span>
+        </div>
+        <span>{{ meta.subtitle }}</span>
+        </div>
 
-            <VAvatar
-              rounded
-              variant="tonal"
-              :color="meta.color"
-              :icon="meta.icon"
-            />
-          </VCardText>
+        <VAvatar
+        rounded
+        variant="tonal"
+        :color="meta.color"
+        :icon="meta.icon"
+        />
+        </VCardText>
         </VCard>
-      </VCol>
-
+     
+        </VCol>
+      -->
       <VCol cols="12">
         <VCard title="Search Filter">
           <!-- 👉 Filters -->
@@ -363,24 +404,20 @@ watchEffect(() => {
 
           <VDivider />
 
-          <!-- SECTION datatable -->
+          <!-- SECTION datatable <pre>{{ users }}</pre> -->
           <VDataTableServer
             v-model:items-per-page="options.itemsPerPage"
             v-model:page="options.page"
-            :items="users"
+            :items="filteredUsers"
             :items-length="totalUsers"
             :headers="headers"
             class="text-no-wrap"
             @update:options="options = $event"
           >
             <!-- User -->
+            
             <template #item.user="{ item }">
               <div class="d-flex align-center">
-                <!--
-                  <pre>{{ JSON.stringify(item, null, 2) }}
-                  </pre>
-                --> 
-
                 <VAvatar
                   size="34"
                   :variant="!item.raw.avatar ? 'tonal' : undefined"
@@ -403,8 +440,7 @@ watchEffect(() => {
                       {{ item.raw.fullName }}
                     </RouterLink>
                   </h6>
-
-                  <span class="text-sm text-medium-emphasis">@{{ item.raw.email }}</span>
+                  <span class="text-sm text-medium-emphasis">{{ item.raw.email }}</span>
                 </div>
               </div>
             </template>
@@ -532,7 +568,7 @@ watchEffect(() => {
           </VDataTableServer>
           <!-- SECTION -->
         </VCard>
-
+      
         <!-- 👉 Add New User -->
         <AddNewUserDrawer
           v-model:isDrawerOpen="isAddNewUserDrawerVisible"

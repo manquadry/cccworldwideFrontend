@@ -99,6 +99,7 @@ const userProfileList = [
   >
     <VAvatar
       class="cursor-pointer"
+      size="34"
       :color="!(userData && userData.avatar) ? 'primary' : undefined"
       :variant="!(userData && userData.avatar) ? 'tonal' : undefined"
     >
@@ -110,7 +111,6 @@ const userProfileList = [
         v-else
         icon="tabler-user"
       />
-
       <!-- SECTION Menu -->
       <VMenu
         activator="parent"

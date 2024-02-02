@@ -1,11 +1,11 @@
+<!-- eslint-disable vue/no-lone-template -->
 <script setup>
 import api from '@/apiservices/api'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import { default as registerMultistepIllustrationDark, default as registerMultistepIllustrationLight } from '@images/illustrations/ccclogo.png'
 import registerMultistepBgDark from '@images/pages/register-multistep-bg-dark.png'
 import registerMultistepBgLight from '@images/pages/register-multistep-bg-light.png'
-
-
+import { onMounted, ref } from 'vue'
 
 const registerMultistepBg = useGenerateImageVariant(registerMultistepBgLight, registerMultistepBgDark)
 const currentStep = ref(0)
@@ -13,23 +13,6 @@ const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const registerMultistepIllustration = useGenerateImageVariant(registerMultistepIllustrationLight, registerMultistepIllustrationDark)
 
-const radioContent = [
-  {
-    title: 'Starter',
-    desc: 'A simple start for everyone.',
-    value: '0',
-  },
-  {
-    title: 'Standard',
-    desc: 'For small to medium businesses.',
-    value: '99',
-  },
-  {
-    title: 'Enterprise',
-    desc: 'Solution for big organizations.',
-    value: '499',
-  },
-]
 
 const items = [{
   title: 'Account',
@@ -44,53 +27,64 @@ const items = [{
 {
   title: 'Anoiting Details',
   subtitle: 'Joinning/Anoiting Details',
-  icon: 'tabler-file-text',
+  icon: 'tabler-credit-card',
 },
 {
   title: 'Contact Details',
   subtitle: 'Contact Details',
-  icon: 'tabler-file-text',
+  icon: 'tabler-map-pin',
 },
 {
   title: 'Church Details',
   subtitle: 'Church Information',
+  icon: 'custom-home',
+
+},
+{
+  title: 'Review and Summary',
+  subtitle: 'Review & Summary',
   icon: 'tabler-file-text',
 }]
-
-import { onMounted, ref } from 'vue'
 
 const form = ref({
   email: '',
   password: '',
   confirmPassword: '',
-  sname: '',
+  sname: ' ',
   fname: '',
   mname: '',
-  Gender: 'Select your gender',
+  Gender: 'Select you gender',
   dob: '',
   MStatus: 'Select status',
   VineyardStatus: 'Select Vineyard status',
   title: 'Select present title',
   dot: '',
   selectedMinistry: 'Select Ministry',
-  mobile: '',
+  phoneNo: '',
+  altPhoneno: '',
   address: '',
   selectedCountry: 'Select Country of residence',
   selectedState: 'Select state of residence',
-  selectedchurchCountry: 'Select Country',
+  selectedchurchCountry: ' ',
   selectedChurchState: 'Select state',
   state: '',
   city: '',
   Country: '',
-  parish: '',
+  seletedParish: 'Select parish',
   getTitleByGendervalue: '',
+  selectedParishState: 'Select state',
+  getParisByState: '',
+  confirm_title: 'Registered!',
+  
 
-  // Add other form fields as needed
+  // Add other form fields as needed list here confirm-title
   ministryList: [],
   countryList: [],
   stateList: [],
   churchStateList: [],
   titleList: [],
+  parishList: [],
+  genderList: Object.freeze(['Male', 'Female']),
 })
 
 async function fetchCountries() {
@@ -115,62 +109,47 @@ async function fetchCountries() {
   }
 }
 
-
-const getFormData = () => {
-  // Gather all form data here
-
-
-  // Display the form data in an alert for debugging
-  alert(JSON.stringify(form))
-  
-  // return formData
-}
-
-
-
 const register =    () => {
-  alert('Submitted from registerd..!!')
- 
-  // try{
-
-  //   alert(email.value);
-
-  //   // const response = api.post('/Addmember', {
-  //   //   email: email.value,  // Assuming email and password are reactive variables
-  //   //   password: password.value,
-  //   //   confirmPassword: confirmPassword.value,
-  //   // }).then(response => {
+  
+  try{
+    const response = api.post('/Addmember', {
+      email: form.value.email,  // Assuming email and password are reactive variables
+      password: form.value.password,
+      sname: form.value.sname,  // Assuming email and password are reactive variables
+      fname: form.value.fname,
+      mname: form.value.mname,  // Assuming email and password are reactive variables
+      Gender: form.value.Gender,
+      dob: form.value.dob,
+      MStatus: form.value.MStatus,
+      Status: form.value.VineyardStatus,
+      Title: form.value.title,
+      dot: form.value.dot,
+      ministry: form.value.selectedMinistry,
+      mobile: form.value.phoneNo,
+      Altmobile: form.value.altphoneNo,
+      address: form.value.address,
+      Country: form.value.selectedCountry.name,
+      State: form.value.selectedState,
+      City: form.value.city,
+      parishcode: form.value.seletedParish,
+    }).then(response => {
 
   
 
-  //   //   const { accessToken, userData, userAbilities } = response.data
 
+      console.log('Got usersData here register ', JSON.stringify(response.data))
 
+    }).catch(e => {
+      // const { errors: formErrors } = e.response.data
 
-  //   //   if (userData) {
-
-  //   //     console.log('Got usersData here', userData)
-
-  //   //     localStorage.setItem('userAbilities', JSON.stringify(userAbilities))
-  //   //     ability.update(userAbilities)
-  //   //     localStorage.setItem('userData', JSON.stringify(userData))
-  //   //     localStorage.setItem('accessToken', JSON.stringify(accessToken))
-
-  //   //     // router.push('/')
-  //   //     router.replace(route.query.to ? String(route.query.to) : '/')
-
-  //   //   } 
-  //   // }).catch(e => {
-  //   //   // const { errors: formErrors } = e.response.data
-
-  //   //   // errors.value = formErrors
-  //   //   // console.error(e.response.data)
-  //   // })
+      // errors.value = formErrors
+      // console.error(e.response.data)
+    })
 
    
-  // }  catch (error) {
-  //   // console.error('Error:', error)
-  // }
+  }  catch (error) {
+    // console.error('Error:', error)
+  }
 
 
 
@@ -198,6 +177,39 @@ const fetchMinistryFromApi = async () => {
   }
 }
 
+const fetchParishes = async selectedParishState => {
+  
+  try {
+    // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
+    const response = await api.get(`/getParishByState/${selectedParishState}`)
+    const data = response.data
+
+   
+    // Set the parishes data to the form
+    console.log(JSON.stringify(data))
+  
+    if(data.Allparish&&data.Allparish.length>0) {
+
+      form.value.parishList = data.Allparish.map(parish => ({
+        // parishcode: parish.parishcode,
+        parishname: parish.parishname,
+        country: parish.country,
+        states: parish.states,
+        city: parish.city,
+        parishaddress: parish.address,
+        name: parish.parishname,
+        parishcode: parish.parishcode,
+      }))
+    }
+
+
+   
+
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
+
 const getTitleByGender = async getByGendervalue => {
   
   try {
@@ -216,7 +228,7 @@ const getTitleByGender = async getByGendervalue => {
        
       }))
     }
-    console.log( form.value.titleList)
+    
   
   
   } catch (error) {
@@ -228,6 +240,7 @@ const getTitleByGender = async getByGendervalue => {
 onMounted(() => {
   fetchMinistryFromApi()
   fetchCountries()
+  fetchParishes()
 })
 
 const  getResidentialState = () => {
@@ -284,18 +297,67 @@ const  getGenderTitle = () => {
   }
 }
 
+const  getStateParish = () => {
+  if (form.value.selectedParishState) {
+
+    const state=form.value.selectedParishState
+
+    fetchParishes(state)
+  
+  }
+}
+
+//submit to call the register function 
+const onSubmit = message => {
+
+  // eslint-disable-next-line sonarjs/no-all-duplicated-branches
+  if (message) {
+    setTimeout(() => {
+     
+      // eslint-disable-next-line sonarjs/no-use-of-empty-return-value
+      register()
+        .then(response => {
+          // Registration successful
+          alert(response)
+
+          // Additional logic if needed
+        })
+        .catch(error => {
+          // Registration failed
+          alert('Registration failed: ' + error)
+
+          // Additional error handling logic if needed
+        })
+    }, 3000) 
+  } else {
+    alert(message)
+  }
+
+  // register()
+
+}
+
+
+// const closeDialog= () => {
+//   this.isConfirmDialogVisible = false
+//   alert('Cancelled')
+// }
+
+
 
 watchEffect(() => {
   getResidentialState()
   getChurchState()
   getGenderTitle()
- 
+  getStateParish()
 })
+
+const isConfirmDialogVisible = ref(false)
 </script>
 
 
 
-<template>
+<template> 
   <VRow
     no-gutters
     class="auth-wrapper"
@@ -319,7 +381,7 @@ watchEffect(() => {
 
     <VCol
       cols="30"
-      md="10"
+      md="12"
       class="auth-card-v2 d-flex align-center justify-center pa-10"
       style="background-color: rgb(var(--v-theme-surface));"
     >
@@ -331,370 +393,505 @@ watchEffect(() => {
           v-model:current-step="currentStep"
           :items="items"
           :direction="$vuetify.display.smAndUp ? 'horizontal' : 'vertical'"
-          icon-size="24"
-          class="stepper-icon-step-bg mb-8"
+          icon-size="45"
+          class="stepper-icon-step-bg mb-10"
         />
-
-        <VWindow
-          v-model="currentStep"
-          class="disable-tab-transition"
-          style="max-width: 800px;"
-        >
-          <VForm class="justify-center align-center">
-            <!-- This is account details step view -->
-           
-            <VWindowItem>
-              <h5 class="text-h4 mb-1">
-                Account Information
-              </h5>
-              <p class="text-sm">
-                Enter Your Account Details
-              </p>
-
-              <VRow>
-                <VCol cols="12">
-                  <AppTextField
-                    v-model="form.email"
-                    label="Email"
-                    placeholder="Enter your Email address"
-                  />
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.password"
-                    label="Password"
-                    placeholder="Enter your Password"
-                    :type="isPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                    @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                  />
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.confirmPassword"
-                    label="Confirm Password"
-                    placeholder="Confirm your Password"
-                    :type="isConfirmPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                    @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
-                  />
-                </VCol>
-
-                <!--
+        <VDivider />
+        <VCardText>
+          <!-- 👉 stepper content -->
+          <VForm>
+            <VWindow
+              v-model="currentStep"
+              class="disable-tab-transition"
+            >
+              <!-- This is account details step view -->
+              <VWindowItem>
+                <VRow>
                   <VCol cols="12">
-                  <AppTextField
-                  v-model="form.link"
-                  label="Profile Link"
-                  type="url"
-                  />
+                    <h5 class="text-h4 mb-1">
+                      Account Information
+                    </h5>
+                    <p class="text-sm">
+                      Enter Your Account Details
+                    </p>
                   </VCol>
-                -->
-              </VRow>
-            </VWindowItem>
 
-            <!-- This is personal details step view -->
-            <VWindowItem>
-              <h5 class="text-h5 mb-1">
-                Personal Information
-              </h5>
-              <p class="text-sm">
-                Enter Your Personal Information
-              </p>
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="form.email"
+                      label="Enter Email Address"
+                      variant="outlined"
+                    />
+                  </VCol> 
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VTextField
+                      v-model="form.password"
+                      label="Enter Password"
+                      variant="outlined"
+                      :type="isPasswordVisible ? 'text' : 'password'"
+                      :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                      @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                    />
+                  </VCol>
 
-              <VRow>
-                <VCol cols="12">
-                  <AppTextField
-                    v-model="form.sname"
-                    label="Surname Name"
-                    placeholder="Enter your Surname Name"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VTextField
+                      v-model="form.confirmPassword"
+                      label="Confirm Password"
+                      variant="outlined"
+                      :type="isCPasswordVisible ? 'text' : 'password'"
+                      :append-inner-icon="isCPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                      @click:append-inner="isCPasswordVisible = !isCPasswordVisible"
+                    />
+                  </VCol>
+                </VRow>
+              </VWindowItem>
+              <!-- This is personal details step view -->
+              <VWindowItem>
+                <VRow>
+                  <VCol cols="12">
+                    <h5 class="text-h5 mb-1">
+                      Personal Information
+                    </h5>
+                    <p class="text-sm">
+                      Enter Your Personal Information
+                    </p>
+                  </VCol>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.fname"
-                    label="First Name"
-                    placeholder="Enter your First Name"
-                  />
-                </VCol>
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="form.sname"
+                      label="Enter Surname Name"
+                      variant="outlined"
+                    />
+                  </VCol>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.name"
-                    label="Middle Name"
-                    placeholder="Enter your Middle Name"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VTextField
+                      v-model="form.fname"
+                      label="Enter First Name"
+                      variant="outlined"
+                    />
+                  </VCol>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppSelect
-                    v-model="form.Gender"
-                    label="Gender"
-                    :items="['Male', 'Female']"
-                    placeholder=" Select your gender"
-                    @change="getGenderTitle"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VTextField
+                      v-model="form.mname"
+                      label="Enter Middle Name"
+                      variant="outlined"
+                    />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VSelect
+                      v-model="form.Gender"
+                      :items="form.genderList"
+                      label=" Select you gender"
+                      outlined
+                      @change="getGenderTitle"
+                    />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppTextField
+                      v-model="form.dob"
+                      type="date"
+                      label="DOB Your year of birth is not show to anyone"
+                    />
+                  </VCol>
+                </VRow>
+              </VWindowItem>
+              <!-- This is Anoiting details step view -->
+              <VWindowItem>
+                <VRow>
+                  <VCol cols="12">
+                    <h5 class="text-h5 mb-1">
+                      Joinning/Anoiting Information
+                    </h5>
+                    <p class="text-sm">
+                      Enter Your Joinning/Anoiting
+                    </p>
+                  </VCol>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.dob"
-                    type="date"
-                    label="DOB Your year of birth is not show to anyone"
-                  />
-                </VCol>
-              </VRow>
-            </VWindowItem>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppSelect
+                      v-model="form.MStatus"
+                      label="Member Status"
+                      placeholder=" Select status "
+                      :items="['Member/Laity', 'Vineyard Worker']"
+                    />
+                  </VCol>
 
-            <!-- This is joinnning/Anoting details step view -->
-            <VWindowItem>
-              <h5 class="text-h5 mb-1">
-                Joinning/Anoiting Information
-              </h5>
-              <p class="text-sm">
-                Enter Your Joinning/Anoiting
-              </p>
+                  <VCol
+                    v-if="form.MStatus == 'Vineyard Worker'"
+                    cols="12"
+                    md="6"
+                  >
+                    <AppSelect
+                      v-model="form.VineyardStatus"
+                      label="Vineyard Status"
+                      placeholder=" Select Vineyard status "
+                      :items="['Shepherd','Asst. Shepherd','Wolider','Wolima','Church Worker','Pastor']"
+                    />
+                  </VCol>
 
-              <VRow>
-                <VCol cols="12">
-                  <AppSelect
-                    v-model="form.MStatus"
-                    label="Member Status"
-                    placeholder=" Select status "
-                    :items="['Member/Laity', 'Vineyard Worker']"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppSelect
+                      v-model="form.title"
+                      label="Present Title"
+                      :items="form.titleList"
+                    />
+                  </VCol>
 
-                <VCol
-                  v-if="form.MStatus == 'Vineyard Worker'"
-                  cols="12"
-                >
-                  <AppSelect
-                    v-model="form.VineyardStatus"
-                    label="Vineyard Status"
-                    placeholder=" Select Vineyard status "
-                    :items="['Shepherd','Asst. Shepherd','Wolider','Wolima','Church Worker','Pastor']"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppTextField
+                      v-model="form.dot"
+                      type="date"
+                      label="Date of present Anoitment"
+                    />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppSelect
+                      id="ministrySelect"
+                      v-model="form.selectedMinistry"
+                      label="Ministry"
+                      :items="form.ministryList"
+                    />
+                  </VCol>
+                </VRow>
+              </VWindowItem>
+              <!-- This is Contact details step view -->
+              <VWindowItem>
+                <VRow>
+                  <VCol cols="12">
+                    <h5 class="text-h5 mb-1">
+                      Contact Information
+                    </h5>
+                    <p class="text-sm">
+                      Enter Your contact details
+                    </p>
+                  </VCol>
 
-                <VCol
-                  cols="6"
-                  md="6"
-                >
-                  <AppSelect
-                    v-model="form.title"
-                    label="Present Title"
-                    :items="form.titleList"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VPhoneInput
+                      v-model="form.phoneNo"
+                      label="WhatsApp Phone number"
+                      country-label="Country"
+                      country-aria-label="Country for phone number"
+                      invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
+                    />
+                  </VCol>
 
-                <VCol
-                  cols="6"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.dot"
-                    type="date"
-                    label="Date of present Anoitment"
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <VPhoneInput
+                      v-model="form.altphoneNo"
+                      label="Alternative Phone number"
+                      country-label="Country"
+                      country-aria-label="Country for phone number"
+                      invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
+                    />
+                  </VCol>
 
-                <VCol cols="12">
-                  <AppSelect
-                    id="ministrySelect"
-                    v-model="form.selectedMinistry"
-                    label="Ministry"
-                    :items="form.ministryList"
-                  />
-                </VCol>
-              </VRow>
-            </VWindowItem>
+                  <VCol cols="12">
+                    <AppTextField
+                      v-model="form.address"
+                      label="Residential Address"
+                      placeholder="Residential Address Street number and name"
+                    />
+                  </VCol>
 
-            <!-- This is contact details step view -->
-            <VWindowItem>
-              <h5 class="text-h5 mb-1">
-                Contact Information
-              </h5>
-              <p class="text-sm">
-                Enter Your contact details
-              </p>
-              <VRow>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <VPhoneInput
-                    label="WhatsApp Phone number"
-                    country-label="Country"
-                    country-aria-label="Country for phone number"
-                    invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
-                  />
-                </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <!--
+                      <pre>{{ form.countryList }}</pre>
+                      <pre>{{ form.selectedCountry }}</pre>
+                    -->
+                    <AppCombobox
+                      v-model="form.selectedCountry"
+                      label="Country"
+                      :items="form.countryList"
+                      item-title="name"
+                      item-value="id"
+                      @change="getResidentialState"
+                    />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppSelect
+                      v-model="form.selectedState"
+                      label="State"
+                      :items="form.stateList"
+                      item-title="name"
+                    />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <AppTextField
+                      v-model="form.city"
+                      label="City"
+                      placeholder="Enter your Residenctial City"
+                    />
+                  </VCol>
+                </VRow>
+              </VWindowItem>
+              <!-- This is church details step view -->
+              <VWindowItem>
+                <h5 class="text-h5 mt-10">
+                  Church Information
+                </h5>
+                <p class="text-sm">
+                  Enter your current church information
+                </p>
+                <VRow>
+                  <VCol cols="12">
+                    <AppCombobox
+                      v-model="form.selectedchurchCountry"
+                      label="Country"
+                      :items="form.countryList"
+                      item-title="name"
+                      item-value="id"
+                      @change="getChurchState"
+                    />
+                  </VCol>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <VPhoneInput
-                    label="Alternative Phone number"
-                    country-label="Country"
-                    country-aria-label="Country for phone number"
-                    invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
-                  />
-                </VCol>
+                  <VCol
+                    cols="6"
+                    md="6"
+                  >
+                    <AppSelect
+                      v-model="form.selectedParishState"
+                      label="State"
+                      :items="form.churchStateList"
+                      item-title="name"
+                      placeholder=" Select state "
+                      @change="getStateParish"
+                    />
+                  </VCol>
 
-                <VCol cols="12">
-                  <AppTextField
-                    v-model="form.address"
-                    label="Residential Address"
-                    placeholder="Residential Address Street number and name"
-                  />
-                </VCol>
-                <VCol cols="12">
-                  <!--
-                    <pre>{{ form.countryList }}</pre>
-                    <pre>{{ form.selectedCountry }}</pre>
-                  -->
-                  <AppCombobox
-                    v-model="form.selectedCountry"
-                    label="Country"
-                    :items="form.countryList"
-                    item-title="name"
-                    item-value="id"
-                    @change="getResidentialState"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppSelect
-                    v-model="form.selectedState"
-                    label="State"
-                    :items="form.stateList"
-                    item-title="name"
-                  />
-                </VCol>
+                  <VCol
+                    cols="6"
+                    md="6"
+                  >
+                    <!-- <span style="color: rgb(26, 196, 26);">Parish Address :{{ form.parish }}</span> -->
+                    <AppSelect
+                      v-model="form.seletedParish"
+                      label="Parish"
+                      :items="form.parishList"
+                      item-value="parishcode"
+                      :item-title="item => `${item.name}-${item.parishaddress}`"
+                      :hint="`${form.seletedParish}`"
+                      persistent-hint
+                      double-line
+                    />
+                  </VCol>
+                </VRow>
+              </VWindowItem>
+              <!-- This is review & summary step view -->
+              <VWindowItem>
+                <div class="text-base">
+                  <Vdivider>
+                    <h6 class="text-base font-weight-medium mb-2">
+                      Account Details
+                    </h6>
 
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <AppTextField
-                    v-model="form.city"
-                    label="City"
-                    placeholder="Enter your Residenctial City"
-                  />
-                </VCol>
-              </VRow>
-            </VWindowItem>
+                    <p class="mb-1">
+                      Email address {{ form.email }}
+                    </p>
 
-            <VWindowItem>
-              <h5 class="text-h5 mt-10">
-                Church Information
-              </h5>
-              <p class="text-sm">
-                Enter your current church information
-              </p>
-              <VRow>
-                <VCol cols="12">
-                  <AppCombobox
-                    v-model="form.selectedchurchCountry"
-                    label="Country"
-                    :items="form.countryList"
-                    item-title="name"
-                    item-value="id"
-                    @change="getChurchState"
-                  />
-                </VCol>
+                    <VDivider class="my-4" />
 
-                <VCol
-                  cols="6"
-                  md="4"
-                >
-                  <AppSelect
-                    v-model="form.selectedChurchState"
-                    label="State"
-                    :items="form.churchStateList"
-                    item-title="name"
-                    placeholder=" Select state "
-                  />
-                </VCol>
+                    <h6 class="text-base font-weight-medium mb-2">
+                      Personal Details
+                    </h6>
 
-                <VCol
-                  cols="6"
-                  md="4"
-                >
-                  <AppSelect
-                    v-model="form.parish"
-                    label="Parish"
-                    placeholder="Select/type your parish"
-                    :items="['Ogooluwa parish', 'Adeola Parish', 'Igbekele Parish']"
-                  />
-                </VCol>
-              </VRow>
-            </VWindowItem>
-          </VForm>
-        </VWindow>
+                    <p class="mb-1  text-base">
+                      Surname Name <span>{{ form.sname }}</span>
+                    </p>
+                    <p class="mb-1  text-base">
+                      First Name {{ form.fname }}
+                    </p>
+                    <p class="mb-1  text-base">
+                      Middle Name {{ form.mname }}
+                    </p>
+                    <p class="mb-1">
+                      Gender {{ form.Gender }}
+                    </p>
+                    <p class="mb-1">
+                      DOB {{ form.dob }}
+                    </p>
 
-        <div class="d-flex justify-space-between mt-8">
-          <VBtn
-            color="secondary"
-            :disabled="currentStep === 0"
-            variant="tonal"
-            @click="currentStep--"
-          >
-            <VIcon
-              icon="tabler-arrow-left"
-              start
-              class="flip-in-rtl"
+                    <VDivider class="my-4" />
+
+                    <h6 class="text-base font-weight-medium mb-2">
+                      Joinning/Anoiting Details
+                    </h6>
+
+                    <p class="mb-1">
+                      Member Status {{ form.MStatus }}
+                    </p>
+                    <p 
+                      v-if="form.MStatus == 'Vineyard Worker'"
+                      class="mb-1"
+                    >
+                      Vineyard Status   {{ form.VineyardStatus }}
+                    </p>
+                    <p class="mb-1">
+                      Present Title  {{ form.title }}
+                    </p>
+                    <p class="mb-1">
+                      Date of present Anoitment {{ form.dot }}
+                    </p>
+                    <p class="mb-1">
+                      Ministry {{ form.selectedMinistry }}
+                    </p>
+
+                    <VDivider class="my-4" />
+
+                    <h6 class="text-base font-weight-medium mb-2">
+                      Contact Details
+                    </h6>
+
+                    <p class="mb-1">
+                      WhatsApp Phone number  {{ form.phoneNo }}
+                    </p>
+                    <p class="mb-1">
+                      Alternative Phone number {{ form.altphoneNo }}
+                    </p>
+                    <p class="mb-1">
+                      Residential Address {{ form.address }}
+                    </p>
+                    <p class="mb-1">
+                      Country {{ form.selectedCountry.name }}
+                    </p>
+                  
+                    <p class="mb-1">
+                      State {{ form.city }}
+                    </p>
+                    <VDivider class="my-4" />
+                    <h6 class="text-base font-weight-medium mb-2">
+                      Church Details
+                    </h6>
+
+                    <p class="mb-1">
+                      Country {{ form.selectedchurchCountry.name }}
+                    </p>
+                    <p class="mb-1">
+                      State {{ form.selectedParishState }}
+                    </p>
+                    <p class="mb-1">
+                      Parish {{ form.seletedParish.name }}
+                    </p>
+                  </vdivider>
+                </div>
+              </VWindowItem>
+            </VWindow>
+            <div class="d-flex justify-space-between mt-8">
+              <VBtn
+                color="secondary"
+                :disabled="currentStep === 0"
+                variant="tonal"
+                @click="currentStep--"
+              >
+                <VIcon
+                  icon="tabler-arrow-left"
+                  start
+                  class="flip-in-rtl"
+                />
+                Previous
+              </VBtn>
+
+              <VBtn
+                v-if="items.length - 1 === currentStep"
+                color="success"
+                append-icon="tabler-check"
+                @click="isConfirmDialogVisible = true"
+              >
+                Submit
+              </VBtn>
+
+              <VBtn
+                v-else
+                @click="currentStep++"
+              >
+                Next
+
+                <VIcon
+                  icon="tabler-arrow-right"
+                  end
+                  class="flip-in-rtl"
+                />
+              </VBtn>
+            </div>
+            <!-- 👉 Confirm Dialog -->
+            <ConfirmDialog
+              v-model:isDialogVisible="isConfirmDialogVisible"
+              confirmation-question="You are about to confirm this registration Did you want to continue ?"
+              cancel-msg="Registration Cancelled!!"
+              cancel-title="Cancelled"
+              confirm-msg="Your registration is successfully."
+              confirm-title="Registered!"
+              @confirm="onSubmit"
+              @cancel="onCancel"
             />
-            Previous
-          </VBtn>
-
-          <VBtn
-            v-if="items.length - 1 === currentStep"
-            color="success"
-            append-icon="tabler-check"
-            @click="onSubmit"
-          >
-            submit
-          </VBtn>
-
-          <VBtn
-            v-else
-            @click="currentStep++"
-          >
-            Next
-
-            <VIcon
-              icon="tabler-arrow-right"
-              end
-              class="flip-in-rtl"
-            />
-          </VBtn>
-        </div>
+          </vform>
+        </vcardtext>
       </VCard>
+    </VCol>
+    <VCol
+      md="1"
+      class="d-none d-md-flex"
+    >
+      <!-- here your illustration -->
+      <div class="d-flex justify-center align-center w-100 position-relative">
+        <VImg
+          :src="registerMultistepIllustration"
+          class="illustration-image"
+        />
+        <VImg
+          :src="registerMultistepBg"
+          class="bg-image position-absolute w-100"
+        />
+      </div>
     </VCol>
   </VRow>
 </template>
@@ -702,8 +899,80 @@ watchEffect(() => {
 
 
 <style lang="scss">
-@use "@core/scss/template/pages/page-auth.scss";
+#loading-bg {
+  position: absolute;
+  display: block;
+  background: var(--initial-loader-bg  #fff);
+  block-size: 100%;
+  inline-size: 100%;
+}
 
+.loading-logo {
+  position: absolute;
+  inset-block-start: 40%;
+  inset-inline-start: calc(50% - 45px);
+}
+
+.loading {
+  position: absolute;
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  block-size: 55px;
+  inline-size: 55px;
+  inset-block-start: 50%;
+  inset-inline-start: calc(50% - 35px);
+}
+
+.loading .effect-1,
+.loading .effect-2,
+.loading .effect-3 {
+  position: absolute;
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  block-size: 100%;
+  border-inline-start: 3px solid var(--initial-loader-color, #eee);
+  inline-size: 100%;
+}
+
+.loading .effect-1 {
+  animation: rotate 1s ease infinite;
+}
+
+.loading .effect-2 {
+  animation: rotate-opacity 1s ease infinite 0.1s;
+}
+
+.loading .effect-3 {
+  animation: rotate-opacity 1s ease infinite 0.2s;
+}
+
+.loading .effects {
+  transition: all 0.3s ease;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes rotate-opacity {
+  0% {
+    opacity: 0.1;
+    transform: rotate(0deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: rotate(1turn);
+  }
+}
 </style>
 
 <route lang="yaml">
