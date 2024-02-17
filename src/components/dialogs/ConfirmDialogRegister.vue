@@ -24,10 +24,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  apiResponse: {
-    type: String,
-    required: true,
-  },
 })
 
 const emit = defineEmits([
@@ -35,10 +31,7 @@ const emit = defineEmits([
   'confirm',
 ])
 
-
-const registered = ref(false)
-const showProgress = ref(false)
-const showCheck = ref(false)
+const unsubscribed = ref(false)
 const cancelled = ref(false)
 
 const updateModelValue = val => {
@@ -48,13 +41,7 @@ const updateModelValue = val => {
 const onConfirmation = () => {
   emit('confirm', true)
   updateModelValue(false)
-  showProgress.value = true
-  setTimeout(() => {
-    showProgress.value = false
-    registered.value = true
-   
-  }, 3000)
-  showCheck.value = true
+  unsubscribed.value = true
 }
 
 const onCancel = () => {
@@ -65,8 +52,6 @@ const onCancel = () => {
 </script>
 
 <template>
-  <!-- 👉 loader -->
-
   <!-- 👉 Confirm Dialog -->
   <VDialog
     max-width="500"
@@ -87,8 +72,6 @@ const onCancel = () => {
 
         <h6 class="text-lg font-weight-medium">
           {{ props.confirmationQuestion }}
-
-          {{ props.apiResponse }}
         </h6>
       </VCardText>
 
@@ -97,7 +80,7 @@ const onCancel = () => {
           variant="elevated"
           @click="onConfirmation"
         >
-          Yes
+          Confirm
         </VBtn>
 
         <VBtn
@@ -111,10 +94,9 @@ const onCancel = () => {
     </VCard>
   </VDialog>
 
-  <!-- registered -->
+  <!-- Unsubscribed -->
   <VDialog
-    v-if="showCheck"
-    v-model="registered"
+    v-model="unsubscribed"
     max-width="500"
   >
     <VCard>
@@ -127,7 +109,6 @@ const onCancel = () => {
           style=" block-size: 88px;inline-size: 88px; pointer-events: none;"
         >
           <span class="text-3xl">
-            
             <VIcon icon="tabler-check" />
           </span>
         </VBtn>
@@ -137,33 +118,13 @@ const onCancel = () => {
         </h1>
 
         <p>{{ props.confirmMsg }}</p>
-        <p>{{ props.successfulStatus }}</p>
 
         <VBtn
-         
           color="success"
-          @click="registered = false"
+          @click="unsubscribed = false"
         >
           Ok
         </VBtn>
-      </VCardText>
-    </VCard>
-  </VDialog>
-  <VDialog
-    v-model="showProgress"
-    max-width="500"
-  >
-    <VCard>
-      <VCardText class="text-center px-10 py-6">
-        <VProgressCircular
-          indeterminate
-          color="primary"
-        />
-       
-
-        <h1 class="text-h4 mb-4">
-          please wait
-        </h1>
       </VCardText>
     </VCard>
   </VDialog>

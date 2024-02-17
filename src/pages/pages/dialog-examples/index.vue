@@ -280,7 +280,8 @@ const userData = {
         <!-- 👉 Edit user info dialog -->
         <UserInfoEditDialog
           v-model:isDialogVisible="isUserInfoEditDialogVisible"
-          :user-data="userData"
+          c
+
         />
       </VCard>
     </VCol>

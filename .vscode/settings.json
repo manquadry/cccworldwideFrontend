@@ -90,5 +90,7 @@
         "borderStyle": "solid"
       }
     ]
-  }
+  },
+  "vetur.trace.server": "messages",
+  "vetur.validation.templateProps": true
 }

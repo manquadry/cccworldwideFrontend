@@ -1,21 +1,23 @@
 <script setup>
-import { VDataTableServer } from 'vuetify/labs/VDataTable'
 import { paginationMeta } from '@/@fake-db/utils'
-import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
-import { useUserListStore } from '@/views/apps/user/useUserListStore'
-import { avatarText } from '@core/utils/formatters'
-import api from '@/apiservices/api'
-import { onMounted, ref } from 'vue'
+import { useAllAdminActions } from '@/apiservices/adminActions'
+import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
-
-const userListStore = useUserListStore()
+const AllAdminActions = useAllAdminActions()
 const searchQuery = ref('')
 const selectedRole = ref()
 const selectedPlan = ref()
 const selectedStatus = ref()
 const totalPage = ref(1)
-const totalUsers = ref(0)
-const users = ref([])
+const totalParish = ref(0)
+const parish = ref([])
+const isPermissionDialogVisible = ref(false)
+const isAddPermissionDialogVisible = ref(false)
+const permissionName = ref('')
+const isCreateParishVisible = ref(false)
+const isEditParishVisible = ref(false)
+
+
 
 const options = ref({
   page: 1,
@@ -25,28 +27,92 @@ const options = ref({
   search: undefined,
 })
 
-// Headers
+
+const parishData = {
+  // id: 110,
+  // email: 'bidemi12222@yahoo.com',
+  // phone1: '+2349034534343',
+  // phone2: '2349099756654',
+  // country: 'Nigeria',
+  // states: 'Lagos',
+  // city: 'Agege',
+  // address: 'Address',
+  // parishname: 'test testing',
+  parishcode: 'LA02',
+
+  // avatar: '',
+}
+
+// Retrieve stored data from local storage on component mount
+// const storedData = JSON.parse(localStorage.getItem('tableData') || '[]')
+
+// users.value = storedData
+
+// Function to filter users based on search query
+const filteredUsers = computed(() => {
+  return users.value.filter(user => {
+
+    const fullNameMatch = user.fullName.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    // Add additional keys for filtering
+    const emailMatch = user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+
+    const genderMatch = user.gender.toLowerCase() === searchQuery.value.toLowerCase()
+
+    const roleMatch = user.role.toLowerCase() === searchQuery.value.toLowerCase()
+
+
+    // Combine the results using logical OR (||) for flexibility
+    return fullNameMatch || emailMatch || genderMatch || roleMatch
+
+    // Add more conditions with logical OR (||) as needed
+  })
+})
+
+
+
+// Table Headers
 const headers = [
   {
-    title: 'User',
-    key: 'user',
+    title: 'Paris Name',
+    key: 'parishname',
+  },
+
+  {
+    title: 'Phone Number',
+    key: 'phone1',
+  },
+
+  {
+    title: 'Country',
+    value: 'country',
   },
   {
-    title: 'Role',
-    key: 'role',
+    title: 'email',
+    value: 'email',
   },
-  {
-    title: 'Plan',
-    key: 'plan',
-  },
-  {
-    title: 'Billing',
-    key: 'billing',
-  },
-  {
-    title: 'Status',
-    key: 'status',
-  },
+  
+  // {
+  //   title: 'email',
+  //   key: 'email',
+  // },
+
+  // {
+  //   title: 'Role',
+  //   key: 'role',
+  // },
+
+ 
+
+  // {
+  //   title: 'Billing',
+  //   key: 'billing',
+  // },
+  // {
+  //   title: 'Status',
+  //   key: 'status',
+  // },
   {
     title: 'Actions',
     key: 'actions',
@@ -54,25 +120,29 @@ const headers = [
   },
 ]
 
-// 👉 Fetching users
-const fetchUsers = () => {
-  userListStore.fetchUsers({
+// 👉 Fetching Parish
+const fetchAllParish = () => {
+  AllAdminActions.fetchAllParish({
     q: searchQuery.value,
     status: selectedStatus.value,
     plan: selectedPlan.value,
     role: selectedRole.value,
     options: options.value,
   }).then(response => {
-    users.value = response.data.users
+    parish.value = response.data.allParish
+
+    // Store data in local storage
+    // localStorage.setItem('tableData', JSON.stringify(response.data.users))
+    console.log('<======Parish Data Live=====>', response)
     totalPage.value = response.data.totalPage
-    totalUsers.value = response.data.totalUsers
+    totalParish.value = response.data.totalParish
     options.value.page = response.data.page
   }).catch(error => {
     console.error(error)
   })
 }
 
-watchEffect(fetchUsers)
+watchEffect(fetchAllParish)
 
 // 👉 search filters
 const roles = [
@@ -81,20 +151,8 @@ const roles = [
     value: 'admin',
   },
   {
-    title: 'Author',
-    value: 'author',
-  },
-  {
-    title: 'Editor',
-    value: 'editor',
-  },
-  {
-    title: 'Maintainer',
-    value: 'maintainer',
-  },
-  {
-    title: 'Subscriber',
-    value: 'subscriber',
+    title: 'Client',
+    value: 'client',
   },
 ]
 
@@ -180,13 +238,6 @@ const resolveUserStatusVariant = stat => {
 
 const isAddNewUserDrawerVisible = ref(false)
 
-const addNewUser = userData => {
-  userListStore.addUser(userData)
-
-  // refetch User
-  fetchUsers()
-}
-
 // 👉 List
 const userListMeta = [
   {
@@ -224,96 +275,104 @@ const userListMeta = [
 ]
 
 const deleteUser = id => {
-  userListStore.deleteUser(id)
+  AllAdminActions.deleteUser(id)
 
   // refetch User
-  fetchUsers()
+  fetchAllParish()
 }
 
-onMounted(() => {
-  fetchMinistryFromApi()
-  fetchCountries()
-  fetchParishes()
-})
+const editPermission = name => {
+  isPermissionDialogVisible.value = true
+  permissionName.value = name
+}
 </script>
 
 <template>
   <section>
     <VRow>
-      <VCol
+      <!--
+        <VCol
         v-for="meta in userListMeta"
         :key="meta.title"
         cols="12"
         sm="6"
         lg="3"
-      >
+        >
+    
         <VCard>
-          <VCardText class="d-flex justify-space-between">
-            <div>
-              <span>{{ meta.title }}</span>
-              <div class="d-flex align-center gap-2 my-1">
-                <h6 class="text-h4">
-                  {{ meta.stats }}
-                </h6>
-                <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">( {{ meta.percentage > 0 ? '+' : '' }} {{ meta.percentage }}%)</span>
-              </div>
-              <span>{{ meta.subtitle }}</span>
-            </div>
+        <VCardText class="d-flex justify-space-between">
+        <div>
+        <span>{{ meta.title }}</span>
+        <div class="d-flex align-center gap-2 my-1">
+        <h6 class="text-h4">
+        {{ meta.stats }}
+        </h6>
+        <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">( {{ meta.percentage > 0 ? '+' : '' }} {{ meta.percentage }}%)</span>
+        </div>
+        <span>{{ meta.subtitle }}</span>
+        </div>
 
-            <VAvatar
-              rounded
-              variant="tonal"
-              :color="meta.color"
-              :icon="meta.icon"
-            />
-          </VCardText>
+        <VAvatar
+        rounded
+        variant="tonal"
+        :color="meta.color"
+        :icon="meta.icon"
+        />
+        </VCardText>
         </VCard>
-      </VCol>
-
+     
+        </VCol>
+      -->
       <VCol cols="12">
         <VCard title="Search Filter">
           <!-- 👉 Filters -->
           <VCardText>
             <VRow>
               <!-- 👉 Select Role -->
-              <VCol
+              <!--
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedRole"
-                  label="Select Role"
-                  :items="roles"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedRole"
+                label="Select Role"
+                :items="roles"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
               <!-- 👉 Select Plan -->
-              <VCol
+              <!-- 
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedPlan"
-                  label="Select Plan"
-                  :items="plans"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedPlan"
+                label="Select Plan"
+                :items="plans"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
               <!-- 👉 Select Status -->
-              <VCol
+              <!--
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedStatus"
-                  label="Select Status"
-                  :items="status"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedStatus"
+                label="Select Status"
+                :items="status"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
             </VRow>
           </VCardText>
 
@@ -347,63 +406,68 @@ onMounted(() => {
               </div>
 
               <!-- 👉 Export button -->
-              <VBtn
+              <!-- 
+                <VBtn
                 variant="tonal"
                 color="secondary"
                 prepend-icon="tabler-screen-share"
-              >
+                >
                 Export
-              </VBtn>
+                </VBtn>
 
-              <!-- 👉 Add user button -->
+                <VBtn>
+              -->
+              <!-- 👉 Add parish button -->
+
               <VBtn
                 prepend-icon="tabler-plus"
-                @click="isAddNewUserDrawerVisible = true"
+                @click="isCreateParishVisible = !isCreateParishVisible"
               >
-                Add Parish
+                Add New Parish
               </VBtn>
             </div>
           </VCardText>
 
           <VDivider />
 
-          <!-- SECTION datatable -->
+          <!-- SECTION datatable <pre>{{ users }}</pre> -->
           <VDataTableServer
             v-model:items-per-page="options.itemsPerPage"
             v-model:page="options.page"
-            :items="users"
-            :items-length="totalUsers"
+            :items="parish"
+            :items-length="totalParish"
             :headers="headers"
             class="text-no-wrap"
             @update:options="options = $event"
           >
-            <!-- User -->
-            <template #item.user="{ item }">
+            <!--  👉 Parish -->
+
+
+            <template #item.parish="{ item }">
               <div class="d-flex align-center">
                 <VAvatar
                   size="34"
                   :variant="!item.raw.avatar ? 'tonal' : undefined"
-                  :color="!item.raw.avatar ? resolveUserRoleVariant(item.raw.role).color : undefined"
+                  :color="!item.raw.avatar ? resolveUserRoleVariant(item.raw.city).color : undefined"
                   class="me-3"
                 >
                   <VImg
                     v-if="item.raw.avatar"
                     :src="item.raw.avatar"
                   />
-                  <span v-else>{{ avatarText(item.raw.fullName) }}</span>
+                  <span v-else>{{ avatarText(item.raw.email) }}</span>
                 </VAvatar>
 
                 <div class="d-flex flex-column">
                   <h6 class="text-base">
                     <RouterLink
-                      :to="{ name: 'apps-user-view-id', params: { id: item.raw.id } }"
+                      :to="{ name: 'apps-user-view-id', params: { id: item.raw.country } }"
                       class="font-weight-medium user-list-name"
                     >
-                      {{ item.raw.fullName }}
+                      {{ item.raw.country }}
                     </RouterLink>
                   </h6>
-
-                  <span class="text-sm text-medium-emphasis">@{{ item.raw.email }}</span>
+                  <span class="text-sm text-medium-emphasis">{{ item.raw.email }}</span>
                 </div>
               </div>
             </template>
@@ -425,7 +489,7 @@ onMounted(() => {
               </div>
             </template>
 
-            <!-- Plan -->
+            <!-- 👉 Plan -->
             <template #item.plan="{ item }">
               <span class="text-capitalize font-weight-medium">{{ item.raw.currentPlan }}</span>
             </template>
@@ -448,47 +512,25 @@ onMounted(() => {
                 <VIcon icon="tabler-trash" />
               </IconBtn>
 
-              <IconBtn>
-                <VIcon icon="tabler-edit" />
-              </IconBtn>
+              <VBtn
+                icon
+                size="small"
+                color="medium-emphasis"
+                variant="text"
+                @click="isEditParishVisible = !isEditParishVisible"
+              >
+                <VIcon
+                  size="22"
+                  icon="tabler-edit"
+                />
+              </VBtn>
 
               <VBtn
                 icon
                 variant="text"
                 size="small"
                 color="medium-emphasis"
-              >
-                <VIcon
-                  size="24"
-                  icon="tabler-dots-vertical"
-                />
-
-                <VMenu activator="parent">
-                  <VList>
-                    <VListItem :to="{ name: 'apps-user-view-id', params: { id: item.raw.id } }">
-                      <template #prepend>
-                        <VIcon icon="tabler-eye" />
-                      </template>
-
-                      <VListItemTitle>View</VListItemTitle>
-                    </VListItem>
-
-                    <VListItem link>
-                      <template #prepend>
-                        <VIcon icon="tabler-pencil" />
-                      </template>
-                      <VListItemTitle>Edit</VListItemTitle>
-                    </VListItem>
-
-                    <VListItem @click="deleteUser(item.raw.id)">
-                      <template #prepend>
-                        <VIcon icon="tabler-trash" />
-                      </template>
-                      <VListItemTitle>Delete</VListItemTitle>
-                    </VListItem>
-                  </VList>
-                </VMenu>
-              </VBtn>
+              />
             </template>
 
             <!-- pagination -->
@@ -496,13 +538,13 @@ onMounted(() => {
               <VDivider />
               <div class="d-flex align-center justify-sm-space-between justify-center flex-wrap gap-3 pa-5 pt-3">
                 <p class="text-sm text-disabled mb-0">
-                  {{ paginationMeta(options, totalUsers) }}
+                  {{ paginationMeta(options, totalParish) }}
                 </p>
 
                 <VPagination
                   v-model="options.page"
-                  :length="Math.ceil(totalUsers / options.itemsPerPage)"
-                  :total-visible="$vuetify.display.xs ? 1 : Math.ceil(totalUsers / options.itemsPerPage)"
+                  :length="Math.ceil(totalParish / options.itemsPerPage)"
+                  :total-visible="$vuetify.display.xs ? 1 : Math.ceil(totalParish / options.itemsPerPage)"
                 >
                   <template #prev="slotProps">
                     <VBtn
@@ -531,12 +573,30 @@ onMounted(() => {
           </VDataTableServer>
           <!-- SECTION -->
         </VCard>
-
-        <!-- 👉 Add New User -->
-        <AddNewUserDrawer
-          v-model:isDrawerOpen="isAddNewUserDrawerVisible"
-          @user-data="addNewUser"
+        <!-- 👉 Add New User Permission -->
+        <AddEditPermissionDialog
+          v-model:isDialogVisible="isPermissionDialogVisible"
+          v-model:permission-name="permissionName"
         />
+        <AddEditPermissionDialog v-model:isDialogVisible="isAddPermissionDialogVisible" />
+
+        <!-- 👉 Create parish dialog -->
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+        >
+          <CreateParishDialog v-model:is-dialog-visible="isCreateParishVisible" />
+        </VCol>
+
+        <!-- 👉 Edit parish dialog -->
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+        >
+         cc
+        </VCol>
       </vcol>
     </vrow>
   </section>

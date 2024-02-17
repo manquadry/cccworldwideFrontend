@@ -12,8 +12,10 @@ export default [
         icon: { icon: 'tabler-users' },
         children: [
           { title: 'View Members', to: 'dashboards-viewuser-dashboard' },
+          { title: 'Add Parish', to: 'dashboards-parish-dashboard' },
+       
 
-          // { title: 'View', to: { name: 'apps-user-view-id', params: { id: 21 } } },
+          // { title: 'Add Parish', to: { name: 'dashboards-parish-dashboard', params: { id: 21 } } },
         ],
       },
 

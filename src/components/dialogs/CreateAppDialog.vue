@@ -18,7 +18,7 @@ const currentStep = ref(0)
 const createApp = [
   {
     icon: 'tabler-clipboard',
-    title: 'Details',
+    title: 'Details From Parish DIAO',
     subtitle: 'Enter Details',
   },
   {

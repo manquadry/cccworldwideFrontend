@@ -5049,6 +5049,11 @@ v-phone-input@^4.1.1:
     flag-icons "^7.1.0"
     world-flags-sprite "^0.0.2"
 
+v3confirm@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/v3confirm/-/v3confirm-1.1.1.tgz"
+  integrity sha512-Xri71Y45wioMcjvcTxu5/CogVQ7wDA8zUeXXm9xc91kA81HPOE4AJXuutMQgiTFcBcd16Z6cawD8vBWQTk92hQ==
+
 v8-compile-cache@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz"

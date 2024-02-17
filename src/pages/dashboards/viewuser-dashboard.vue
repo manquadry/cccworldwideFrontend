@@ -1,8 +1,6 @@
 <script setup>
 import { paginationMeta } from '@/@fake-db/utils'
 import { useUserListStore } from '@/apiservices/membersList'
-import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
-
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 const userListStore = useUserListStore()
@@ -13,6 +11,9 @@ const selectedStatus = ref()
 const totalPage = ref(1)
 const totalUsers = ref(0)
 const users = ref([])
+const isPermissionDialogVisible = ref(false)
+const isAddPermissionDialogVisible = ref(false)
+const permissionName = ref('')
 
 const options = ref({
   page: 1,
@@ -56,11 +57,13 @@ const filteredUsers = computed(() => {
 const headers = [
   {
     title: 'Member',
+    color: 'primary',
     key: 'user',
   },
 
   {
     title: 'Phone Number',
+    color: 'info',
     key: 'mobile',
   },
 
@@ -93,11 +96,11 @@ const headers = [
   //   title: 'Status',
   //   key: 'status',
   // },
-  // {
-  //   title: 'Actions',
-  //   key: 'actions',
-  //   sortable: false,
-  // },
+  {
+    title: 'Actions',
+    key: 'actions',
+    sortable: false,
+  },
 ]
 
 // 👉 Fetching users
@@ -269,6 +272,11 @@ const deleteUser = id => {
   // refetch User
   fetchUsers()
 }
+
+const editPermission = name => {
+  isPermissionDialogVisible.value = true
+  permissionName.value = name
+}
 </script>
 
 <template>
@@ -313,44 +321,50 @@ const deleteUser = id => {
           <VCardText>
             <VRow>
               <!-- 👉 Select Role -->
-              <VCol
+              <!--
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedRole"
-                  label="Select Role"
-                  :items="roles"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedRole"
+                label="Select Role"
+                :items="roles"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
               <!-- 👉 Select Plan -->
-              <VCol
+              <!-- 
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedPlan"
-                  label="Select Plan"
-                  :items="plans"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedPlan"
+                label="Select Plan"
+                :items="plans"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
               <!-- 👉 Select Status -->
-              <VCol
+              <!--
+                <VCol
                 cols="12"
                 sm="4"
-              >
+                >
                 <AppSelect
-                  v-model="selectedStatus"
-                  label="Select Status"
-                  :items="status"
-                  clearable
-                  clear-icon="tabler-x"
+                v-model="selectedStatus"
+                label="Select Status"
+                :items="status"
+                clearable
+                clear-icon="tabler-x"
                 />
-              </VCol>
+                </VCol>
+              -->
             </VRow>
           </VCardText>
 
@@ -384,21 +398,24 @@ const deleteUser = id => {
               </div>
 
               <!-- 👉 Export button -->
-              <VBtn
+              <!-- 
+                <VBtn
                 variant="tonal"
                 color="secondary"
                 prepend-icon="tabler-screen-share"
-              >
+                >
                 Export
-              </VBtn>
-
+                </VBtn>
+              -->
               <!-- 👉 Add user button -->
-              <VBtn
+              <!-- 
+                <VBtn
                 prepend-icon="tabler-plus"
                 @click="isAddNewUserDrawerVisible = true"
-              >
+                >
                 Add New User
-              </VBtn>
+                </VBtn>
+              -->
             </div>
           </VCardText>
 
@@ -414,8 +431,9 @@ const deleteUser = id => {
             class="text-no-wrap"
             @update:options="options = $event"
           >
-            <!-- User -->
-            
+            <!--  👉 User -->
+
+
             <template #item.user="{ item }">
               <div class="d-flex align-center">
                 <VAvatar
@@ -462,7 +480,7 @@ const deleteUser = id => {
               </div>
             </template>
 
-            <!-- Plan -->
+            <!-- 👉 Plan -->
             <template #item.plan="{ item }">
               <span class="text-capitalize font-weight-medium">{{ item.raw.currentPlan }}</span>
             </template>
@@ -485,9 +503,18 @@ const deleteUser = id => {
                 <VIcon icon="tabler-trash" />
               </IconBtn>
 
-              <IconBtn>
-                <VIcon icon="tabler-edit" />
-              </IconBtn>
+              <VBtn
+                icon
+                size="small"
+                color="medium-emphasis"
+                variant="text"
+                @click="editPermission(item.raw.role)"
+              >
+                <VIcon
+                  size="22"
+                  icon="tabler-edit"
+                />
+              </VBtn>
 
               <VBtn
                 icon
@@ -569,11 +596,12 @@ const deleteUser = id => {
           <!-- SECTION -->
         </VCard>
       
-        <!-- 👉 Add New User -->
-        <AddNewUserDrawer
-          v-model:isDrawerOpen="isAddNewUserDrawerVisible"
-          @user-data="addNewUser"
+        <!-- 👉 Add New User Permission -->
+        <AddEditPermissionDialog
+          v-model:isDialogVisible="isPermissionDialogVisible"
+          v-model:permission-name="permissionName"
         />
+        <AddEditPermissionDialog v-model:isDialogVisible="isAddPermissionDialogVisible" />
       </vcol>
     </vrow>
   </section>

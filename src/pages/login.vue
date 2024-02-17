@@ -3,10 +3,7 @@ import api from '@/apiservices/api'
 import { useAppAbility } from '@/plugins/casl/useAppAbility'
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
-import authV2LoginIllustrationBorderedDark from '@images/pages/ccclogo.png'
-import authV2LoginIllustrationBorderedLight from '@images/pages/ccclogo.png'
-import authV2LoginIllustrationDark from '@images/pages/ccclogo.png'
-import authV2LoginIllustrationLight from '@images/pages/ccclogo.png'
+import { default as authV2LoginIllustrationBorderedDark, default as authV2LoginIllustrationBorderedLight, default as authV2LoginIllustrationDark, default as authV2LoginIllustrationLight } from '@images/pages/ccclogo.png'
 import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
@@ -60,17 +57,16 @@ const rememberMe = ref(false)
 
 
 const login =    () => {
+  
   try{
     const response = api.post('/login', {
       email: email.value,  // Assuming email and password are reactive variables
       password: password.value,
     }).then(response => {
 
-  
+      console.log('Coming from API', JSON.stringify(response.data))
 
       const { accessToken, userData, userAbilities } = response.data
-
-
 
       if (userData) {
 

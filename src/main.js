@@ -15,9 +15,10 @@ import 'flag-icons/css/flag-icons.min.css'
 import { createPinia } from 'pinia'
 import { createVPhoneInput } from 'v-phone-input'
 import 'v-phone-input/dist/v-phone-input.css'
+import VueConfirmPlugin from 'v3confirm'
 import { createApp } from 'vue'
-import vueCountryRegionSelect from 'vue3-country-region-select'
 import CountryFlag from 'vue-country-flag-next'
+import vueCountryRegionSelect from 'vue3-country-region-select'
 
 
 const vPhoneInput = createVPhoneInput({
@@ -34,6 +35,11 @@ const app = createApp(App)
 
 app.use(vueCountryRegionSelect)
 app.component('CountryFlag', CountryFlag)
+app.use(VueConfirmPlugin, {
+  root: '#confirm',
+  yesText: 'Yes',
+  noText: 'No',
+})
 
 // Use plugins
 app.use(vuetify)

@@ -75,7 +75,7 @@ const form = ref({
   selectedParishState: 'Select state',
   getParisByState: '',
   confirm_title: 'Registered!',
-  
+  getCountryById: '',
 
   // Add other form fields as needed list here confirm-title
   ministryList: [],
@@ -94,7 +94,8 @@ async function fetchCountries() {
     const data=response.data
     if(data.countries&&data.countries.length>0) {
     
-
+      console.log('data')
+      
       form.value.countryList = data.countries.map(country => ({
         id: country.id,
         name: country.name,
@@ -113,23 +114,42 @@ const register =    () => {
   
   try{
     const response = api.post('/Addmember', {
-      email: form.value.email,  // Assuming email and password are reactive variables
-      password: form.value.password,
-      sname: form.value.sname,  // Assuming email and password are reactive variables
-      fname: form.value.fname,
-      mname: form.value.mname,  // Assuming email and password are reactive variables
-      Gender: form.value.Gender,
-      dob: form.value.dob,
-      MStatus: form.value.MStatus,
-      Status: form.value.VineyardStatus,
-      Title: form.value.title,
-      dot: form.value.dot,
-      ministry: form.value.selectedMinistry,
-      mobile: form.value.phoneNo,
-      Altmobile: form.value.altphoneNo,
-      address: form.value.address,
-      Country: form.value.selectedCountry.name,
-      State: form.value.selectedState,
+      // email: form.value.email,  // Assuming email and password are reactive variables
+      // password: form.value.password,
+      // sname: form.value.sname,  // Assuming email and password are reactive variables
+      // fname: form.value.fname,
+      // mname: form.value.mname,  // Assuming email and password are reactive variables
+      // Gender: form.value.Gender,
+      // dob: form.value.dob,
+      // MStatus: form.value.MStatus,
+      // Status: form.value.VineyardStatus,
+      // Title: form.value.title,
+      // dot: form.value.dot,
+      // ministry: form.value.selectedMinistry,
+      // mobile: form.value.phoneNo,
+      // Altmobile: form.value.altphoneNo,
+      // address: form.value.address,
+      // Country: form.value.selectedCountry.name,
+      // State: form.value.selectedState,
+      // City: form.value.city,
+      // parishcode: form.value.seletedParish,
+      email: ',ka@gmail.com',  // Assuming email and password are reactive variables
+      password: '123456',
+      sname: '123456', // Assuming email and password are reactive variables
+      fname: 'Kudi',
+      mname: 'Ola',  // Assuming email and password are reactive variables
+      Gender: 'female',
+      dob: 'qwewe',
+      MStatus: 'nsshs',
+      Status: 'nsshs',
+      Title: 'nsshs',
+      dot: 'nsshs',
+      ministry: 'nsshs',
+      mobile: 'nsshs',
+      Altmobile: 'nsshs',
+      address: 'nsshs',
+      Country: 'nsshs',
+      State: 'nsshs',
       City: form.value.city,
       parishcode: form.value.seletedParish,
     }).then(response => {
@@ -143,7 +163,7 @@ const register =    () => {
       // const { errors: formErrors } = e.response.data
 
       // errors.value = formErrors
-      // console.error(e.response.data)
+      console.error(e.response.data)
     })
 
    
@@ -247,9 +267,13 @@ const  getResidentialState = () => {
   form.value.stateList = []
   form.value.selectedState = 'Select state of residence'
   if (form.value.selectedCountry) {
+    form.value.getCountryById = form.value.countryList.find(country => country.id === form.value.selectedCountry)
+  }
+ 
+  if (form.value.getCountryById && Array.isArray( form.value.getCountryById.states) &&  form.value.getCountryById.states.length > 0) {
     
     try {
-      const data=form.value.selectedCountry.states
+      const data= form.value.getCountryById.states
       
       if(Array.isArray(data) && data.length>0){
         form.value.stateList = data.map(countryState => ({
@@ -312,29 +336,30 @@ const onSubmit = message => {
 
   // eslint-disable-next-line sonarjs/no-all-duplicated-branches
   if (message) {
-    setTimeout(() => {
+
      
-      // eslint-disable-next-line sonarjs/no-use-of-empty-return-value
-      register()
-        .then(response => {
-          // Registration successful
-          alert(response)
+    //   // eslint-disable-next-line sonarjs/no-use-of-empty-return-value
+    //   register()
 
-          // Additional logic if needed
-        })
-        .catch(error => {
-          // Registration failed
-          alert('Registration failed: ' + error)
+    //     .then(response => {
+    //       // Registration successful
+    //       alert(response)
 
-          // Additional error handling logic if needed
-        })
-    }, 3000) 
-  } else {
-    alert(message)
+    //       // Additional logic if needed
+    //     })
+    //     .catch(error => {
+    //       // Registration failed
+    //       alert('Registration failed: ' + error)
+
+    //       // Additional error handling logic if needed
+    //     })
+   
+    // } else {
+    //   alert(message)
+    // }
+
+    register()
   }
-
-  // register()
-
 }
 
 
@@ -353,6 +378,10 @@ watchEffect(() => {
 })
 
 const isConfirmDialogVisible = ref(false)
+
+const refetchData = hideOverlay => {
+  setTimeout(hideOverlay, 3000)
+}
 </script>
 
 
@@ -399,6 +428,10 @@ const isConfirmDialogVisible = ref(false)
         <VDivider />
         <VCardText>
           <!-- 👉 stepper content -->
+          <AppCardActions
+            action-refresh
+            @refresh="refetchData"
+          />
           <VForm>
             <VWindow
               v-model="currentStep"
@@ -638,10 +671,6 @@ const isConfirmDialogVisible = ref(false)
                     cols="12"
                     md="6"
                   >
-                    <!--
-                      <pre>{{ form.countryList }}</pre>
-                      <pre>{{ form.selectedCountry }}</pre>
-                    -->
                     <AppCombobox
                       v-model="form.selectedCountry"
                       label="Country"
@@ -650,6 +679,34 @@ const isConfirmDialogVisible = ref(false)
                       item-value="id"
                       @change="getResidentialState"
                     />
+                  
+                    <!--
+                      <pre>{{ form.countryList }}</pre>
+                      <pre>{{ form.selectedCountry }}</pre>
+                      
+                   
+
+                      <AppAutocomplete
+                      v-model="form.selectedCountry"
+                      label="Country"
+                      :items="form.countryList"
+                      item-title="name"
+                      item-value="id"
+                      density="compact"
+                      @change="getChurchState"
+                      >
+                      <template #item="{ props: listItemProp, item }">
+                      <VListItem v-bind="listItemProp">
+                      <template #prepend>
+                      <VAvatar
+                      :image="item.raw.flag_img"
+                      size="30"
+                      />
+                      </template>
+                      </VListItem>
+                      </template>
+                      </AppAutocomplete>  
+                    -->
                   </VCol>
                   <VCol
                     cols="12"
@@ -892,6 +949,7 @@ const isConfirmDialogVisible = ref(false)
           class="bg-image position-absolute w-100"
         />
       </div>
+      <div id="confirm" />
     </VCol>
   </VRow>
 </template>
