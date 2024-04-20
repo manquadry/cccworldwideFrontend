@@ -32,7 +32,7 @@ const router = createRouter({
           // return { name: 'access-control' }
           return { name: 'dashboards-user-dashboard' }
 
-          return { name: 'login', query: to.query }
+          // return { name: 'login', query: to.query }
 
         }
 

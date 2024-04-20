@@ -65,8 +65,6 @@ const onCancel = () => {
 </script>
 
 <template>
-  <!-- 👉 loader -->
-
   <!-- 👉 Confirm Dialog -->
   <VDialog
     max-width="500"
@@ -87,9 +85,9 @@ const onCancel = () => {
 
         <h6 class="text-lg font-weight-medium">
           {{ props.confirmationQuestion }}
-
-          {{ props.apiResponse }}
         </h6>
+
+        <h1>{{ props.apiResponse }}</h1>
       </VCardText>
 
       <VCardText class="d-flex align-center justify-center gap-2">
@@ -111,9 +109,9 @@ const onCancel = () => {
     </VCard>
   </VDialog>
 
-  <!-- registered -->
+  <!-- registered succesfully -->
   <VDialog
-    v-if="showCheck"
+    v-if="showCheck && props.apiResponse === 200"
     v-model="registered"
     max-width="500"
   >
@@ -138,7 +136,8 @@ const onCancel = () => {
 
         <p>{{ props.confirmMsg }}</p>
         <p>{{ props.successfulStatus }}</p>
-
+        
+      
         <VBtn
          
           color="success"
@@ -149,6 +148,45 @@ const onCancel = () => {
       </VCardText>
     </VCard>
   </VDialog>
+
+  <!-- registered not succesfully -->
+  <VDialog
+    v-if="showCheck && props.apiResponse !== 200"
+    v-model="registered"
+    max-width="500"
+  >
+    <VCard>
+      <VCardText class="text-center px-10 py-6">
+        <VBtn
+          icon
+          variant="outlined"
+          color="error"
+          class="my-4"
+          style=" block-size: 88px;inline-size: 88px; pointer-events: none;"
+        >
+          <span class="text-3xl">
+            
+            <VIcon icon="tabler-x" />
+          </span>
+        </VBtn>
+
+        
+
+        <h1 class="text-h4 mb-4">
+          Registration not successful
+        </h1>
+        <VBtn
+         
+          color="success"
+          @click="registered = false"
+        >
+          Ok
+        </VBtn>
+      </VCardText>
+    </VCard>
+  </VDialog>
+  
+  <!-- progress bar -->
   <VDialog
     v-model="showProgress"
     max-width="500"
@@ -159,6 +197,14 @@ const onCancel = () => {
           indeterminate
           color="primary"
         />
+        <span class="d-flex justify-center">
+          <img
+            src="/ccclogo.png"
+            alt=""
+            width="80"
+            height="70"
+          >
+        </span>
        
 
         <h1 class="text-h4 mb-4">

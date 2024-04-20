@@ -20,6 +20,8 @@ const emit = defineEmits([
 
 
 const currentStep = ref(0)
+const apiResponseStatus = ref('')
+const apiResponseMessage = ref('')
 
 const form = ref({
   countryList: [],
@@ -35,6 +37,7 @@ const form = ref({
   parishPhone2: '',
   parishAddress: '',
   city: '',
+  prefixedParishName: '',
 
 
 })
@@ -202,38 +205,34 @@ const onSubmit = message => {
 
   if (message) {
 
-    addNewParish (form.value.parishName, form.value.parishEmail, form.value.parishPhone1, form.value.parishPhone2, form.value.parishAddress, form.value.parishCategory, form.value.selectedCountry, form.value.selectedState, form.value.city, form.value.seletedParish )
+    const response =   addNewParish (form.value.parishName, form.value.parishEmail, form.value.parishPhone1, form.value.parishPhone2, form.value.parishAddress, form.value.parishCategory, form.value.selectedCountry, form.value.selectedState, form.value.city, form.value.seletedParish )
+      .then(response => {
+
+        // console.log("Get Add parish response  here now", JSON.stringify(response.data))
+        const apiStatus=response.data
+
+        console.log("Get Add parish response here now", JSON.stringify(apiStatus.status))
+
+        apiResponseStatus.value=apiStatus.status
+        apiResponseMessage.value=apiStatus.message
+
+       
+      }).catch(e => {
+        // const { errors: formErrors } = e.response.data
+
+        // errors.value = formErrors
+        // console.error(e.response.data)
+      })
+
     
-    //   // eslint-disable-next-line sonarjs/no-use-of-empty-return-value
-    //   register()
-
-    //     .then(response => {
-    //       // Registration successful
-    //       alert(response)
-
-    //       // Additional logic if needed
-    //     })
-    //     .catch(error => {
-    //       // Registration failed
-    //       alert('Registration failed: ' + error)
-
-    //       // Additional error handling logic if needed
-    //     })
-
-    // } else {
-    //   alert(message)
-    // }
-
+    
 
   }
-
-  // addNewParish (form.value.parishName, form.value.parishEmail, form.value.parishPhone1, form.value.parishPhone2, form.value.parishAddress, form.value.parishCategory, form.value.selectedCountry, form.value.selectedState, form.value.city, form.value.seletedParish )
-
 }
 
 const selectedRadio = ref('primary')
 
-const colorsRadio = [
+const parishLevel = [
   'National',
   'State',
   'Area',
@@ -259,6 +258,7 @@ const fetchCountries = async () => {
         states: country.states,
       }))
     }
+
   }).catch(error => {
     console.error(error)
   })
@@ -337,8 +337,8 @@ const fetchParish = async () => {
 }
 
 
-//FetchAll 
-const addNewParish = async  (parishName, parishEmail, parishPhone1, parishPhone2, parishAddress, category, selectedCountry, selectedState, city, selectedParish ) => {
+//Add parish
+const addNewParish =   (parishName, parishEmail, parishPhone1, parishPhone2, parishAddress, category, selectedCountry, selectedState, city, selectedParish ) => {
 
  
   const postData = {
@@ -355,11 +355,17 @@ const addNewParish = async  (parishName, parishEmail, parishPhone1, parishPhone2
   }
   
 
+  try {
+   
+    return  allAdminActions.addNewParish(postData)
+    
+   
 
-  allAdminActions.addNewParish(postData)
+  } catch (error) {
+    // throw new Error('Failed to fetch parish by state')
+  }
 
-
-  // fetchAllParish()
+ 
 
 }
 
@@ -379,17 +385,18 @@ watchEffect(() => {
 
 const isConfirmDialogVisible = ref(false)
 
-
-
-const refetchData = hideOverlay => {
-  setTimeout(hideOverlay, 3000)
-}
+// Define a computed property to concatenate the prefix with parishName
+const prefixedParishName = computed({
+  get() {
+    return 'CCC-' + form.value.parishName
+  },
+})
 </script>
 
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="900"
+    max-width="950"
     @update:model-value="dialogVisibleUpdate"
   >
     <!-- 👉 dialog close btn -->
@@ -430,11 +437,12 @@ const refetchData = hideOverlay => {
               v-model="currentStep"
               class="disable-tab-transition stepper-content"
             >
-              <!-- 👉 category -->
+              <!-- 👉 details -->
               <VWindowItem>
                 <VCol cols="12">
                   <VTextField
                     v-model="form.parishName"
+                    prefix="CCC-"
                     label="Enter Parish Name"
                     variant="outlined"
                   />
@@ -521,10 +529,10 @@ const refetchData = hideOverlay => {
                 >
                   <div>
                     <VRadio
-                      v-for="radio in colorsRadio"
-                      :key="radio"
-                      :label="radio"
-                      :value="radio.toLocaleLowerCase()"
+                      v-for="parish in parishLevel"
+                      :key="parish"
+                      :label="parish"
+                      :value="parish.toLocaleLowerCase()"
                     />
                   </div>
                 </VRadioGroup>
@@ -588,7 +596,7 @@ const refetchData = hideOverlay => {
                
                 <VCol
       
-                  v-if="form.parishCategory !='national' && form.parishCategory !=' '"
+                  v-if="form.parishCategory !='national' && form.parishCategory !=''"
                   cols="12"
                 >
                   <!--
@@ -777,11 +785,11 @@ const refetchData = hideOverlay => {
   <!-- 👉 Confirm Dialog -->
   <ConfirmDialog
     v-model:isDialogVisible="isConfirmDialogVisible"
-    api-response="Here am coming from ParishDialog"
+    :api-response="apiResponseStatus"
     confirmation-question="You are about to confirm this registration Did you want to continue ?"
     cancel-msg="Registration Cancelled!!"
     cancel-title="Cancelled"
-    confirm-msg="Your registration is successfully."
+    :confirm-msg="apiResponseMessage"
     confirm-title="Registered!"
     @confirm="onSubmit"
     @cancel="onCancel"

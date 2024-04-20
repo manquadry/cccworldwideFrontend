@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <script setup>
 import { useAllAdminActions } from '@/apiservices/adminActions'
 import laptopGirl from '@images/illustrations/laptop-girl.png'
@@ -9,20 +10,7 @@ import { onMounted, ref } from 'vue'
 const props = defineProps({
   parishData: {
     type: Object,
-    required: false,
-    default: () => ({
-      // email: ' ',
-      // phone1: ' ',
-      // phone2: ' ',
-      // country: ' ',
-      // states: ' ',
-      // city: ' ',
-      // address: ' ',
-      // parishname: ' ',
-      parishcode: ' ',
-
-      // avatar: ' ',
-    }),
+    required: true,
   },
   isDialogVisible: {
     type: Boolean,
@@ -35,7 +23,7 @@ const emit = defineEmits([
   'updatedData',
 ])
 
-
+const allAdminActions = useAllAdminActions()
 
 const currentStep = ref(0)
 
@@ -43,6 +31,7 @@ const form = ref({
   countryList: [],
   stateList: [],
   parishList: [],
+  preSelectedCountry: [],
   selectedCountry: ' ',
   selectedState: '',
   seletedParish: '',
@@ -53,8 +42,6 @@ const form = ref({
   parishPhone2: '',
   parishAddress: '',
   city: '',
-
-
 })
 
 const createApp = [
@@ -223,27 +210,6 @@ const onSubmit = message => {
 
     addNewParish (form.value.parishName, form.value.parishEmail, form.value.parishPhone1, form.value.parishPhone2, form.value.parishAddress, form.value.parishCategory, form.value.selectedCountry, form.value.selectedState, form.value.city, form.value.seletedParish )
     
-    //   // eslint-disable-next-line sonarjs/no-use-of-empty-return-value
-    //   register()
-
-    //     .then(response => {
-    //       // Registration successful
-    //       alert(response)
-
-    //       // Additional logic if needed
-    //     })
-    //     .catch(error => {
-    //       // Registration failed
-    //       alert('Registration failed: ' + error)
-
-    //       // Additional error handling logic if needed
-    //     })
-
-    // } else {
-    //   alert(message)
-    // }
-
-
   }
 
   // addNewParish (form.value.parishName, form.value.parishEmail, form.value.parishPhone1, form.value.parishPhone2, form.value.parishAddress, form.value.parishCategory, form.value.selectedCountry, form.value.selectedState, form.value.city, form.value.seletedParish )
@@ -262,11 +228,11 @@ const colorsRadio = [
   'Parish',
 ]
 
-const allAdminActions = useAllAdminActions()
 
 
 // 👉 FetchAll country from adminAction
 const fetchCountries = async () => {
+
   allAdminActions.fetchCountries({
   }).then(response => {
     const data=response.data
@@ -277,22 +243,25 @@ const fetchCountries = async () => {
         flag_img: country.flag_img,
         states: country.states,
       }))
+
+     
     }
   }).catch(error => {
     console.error(error)
   })
+
+  // form.value.preSelectedCountry =  form.value.countryList.find(country => country.name === props.parishData.country)
+
+  console.log('preselected  country here', props.parishData.country)
 }
+
+
 
 // 👉 FetchAll country  State by CountryId from adminAction
 const fetchStates = async () => {
   form.value.stateList = []
   
-  if (form.value.selectedCountry) {
-
-    // alert(form.value.selectedCountry)
-
-    // form.value.selectedState = 'Select parish state'
-
+  if (form.value.selectedCountry  &&  form.value.selectedState) {
     const response = await allAdminActions.fetchStateByCountry(form.value.selectedCountry)
     if (response && Array.isArray( response) && response.length > 0) {
       try {
@@ -304,6 +273,7 @@ const fetchStates = async () => {
             name: countryState.name,
           }))
         }
+        
       } catch (error) {
       
       }
@@ -387,12 +357,14 @@ const addNewParish = async  (parishName, parishEmail, parishPhone1, parishPhone2
 
 onMounted(() => {
   fetchCountries()
+ 
 })
 
 
 watchEffect(() => {
   fetchStates()
-  fetchParish()
+  
+  // fetchParish()
 
 })
 
@@ -400,15 +372,30 @@ const isConfirmDialogVisible = ref(false)
 
 
 
-const refetchData = hideOverlay => {
-  setTimeout(hideOverlay, 3000)
-}
+
+
+watchEffect(() => {
+  if (props.parishData) {
+    form.value.email = props.parishData.email 
+    form.value.phone1 = props.parishData.phone1 
+    form.value.phone2 = props.parishData.phone2 
+    form.value.selectedCountry = props.parishData.country 
+    form.value.selectedState = props.parishData.states 
+    form.value.city = props.parishData.city 
+    form.value.address = props.parishData.address 
+    form.value.parishname = props.parishData.parishname 
+    form.value.parishcode = props.parishData.parishcode 
+    form.value.selectedParish = props.parishData.reportingTo 
+    form.value.parishCategory = props.parishData.category 
+
+  }
+})
 </script>
 
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="900"
+    max-width="950"
     @update:model-value="dialogVisibleUpdate"
   >
     <!-- 👉 dialog close btn -->
@@ -423,7 +410,6 @@ const refetchData = hideOverlay => {
         </h5>
         <p class="text-sm text-center mb-8">
           Provide data with this form to create a new parish.
-          {{ paarishcode }}
         </p>
 
         <VRow>
@@ -454,49 +440,48 @@ const refetchData = hideOverlay => {
               <VWindowItem>
                 <VCol cols="12">
                   <VTextField
-                    v-model="parishData.parishname.split(' ')[0]"
                     label="Enter Parish Name"
                     variant="outlined"
+                    autofocus
+                    prefix="CCC-"
                   />
                 </VCol>
                 <VCol cols="12">
                   <VTextField
-                    v-model="form.parishEmail"
+                    v-model="form.email"
                     label="Enter Parish Official email address"
                     variant="outlined"
                   />
                 </VCol>
                 <VCol cols="12">
                   <VPhoneInput
-                    v-model="form.parishPhone1"
+                    v-model="form.phone1"
                     label="Official Phone Number"
                     country-label="Phone Number"
                     country-aria-label="Country for phone number"
-                    default-country="NG"
                     invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                   />
                 </VCol>
 
                 <VCol cols="12">
                   <VPhoneInput
-                    v-model="form.parishPhone2"
+                    v-model="form.phone2"
                     label="Alternative Phone number"
                     country-label="Phone Number"
                     country-aria-label="Country for phone number"
-                    default-country="NG"
                     invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                   />
                 </VCol>
                 <VCol cols="12">
                   <VTextarea
-                    v-model="form.parishAddress"
+                    v-model="form.address"
                     label="Enter Parish Address"
                     rows="2"
                     variant="outlined"
                   />
                 </VCol>
                 <!--
-                  <VRadioGroup v-model="createAppData.category">
+                  <VRadioGroup v-model="parishData.category">
                   <VList class="card-list">
                   <VListItem
                   v-for="category in categories"
@@ -573,7 +558,7 @@ const refetchData = hideOverlay => {
                   </VAutocomplete>
                 </VCol>
                 <VCol cols="12">
-                  <AppSelect
+                  <VAutocomplete
                     v-model="form.selectedState"
                     label="State"
                     :items="form.stateList"
@@ -608,7 +593,7 @@ const refetchData = hideOverlay => {
                
                 <VCol
       
-                  v-if="form.parishCategory !='national' && form.parishCategory !=' '"
+                  v-if="form.parishCategory !='national'"
                   cols="12"
                 >
                   <!--

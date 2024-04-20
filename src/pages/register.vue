@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/no-lone-template -->
 <script setup>
+import { useAllAdminActions } from '@/apiservices/adminActions'
 import api from '@/apiservices/api'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import { default as registerMultistepIllustrationDark, default as registerMultistepIllustrationLight } from '@images/illustrations/ccclogo.png'
@@ -12,7 +13,7 @@ const currentStep = ref(0)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const registerMultistepIllustration = useGenerateImageVariant(registerMultistepIllustrationLight, registerMultistepIllustrationDark)
-
+const allAdminActions = useAllAdminActions()
 
 const items = [{
   title: 'Account',
@@ -87,15 +88,14 @@ const form = ref({
   genderList: Object.freeze(['Male', 'Female']),
 })
 
-async function fetchCountries() {
-  try {
-    // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
-    const response=await api.get('/GetCountries')
+
+
+//Fetch all country 
+const fetchCountries = async () => {
+  allAdminActions.fetchCountries({
+  }).then(response => {
     const data=response.data
-    if(data.countries&&data.countries.length>0) {
-    
-      console.log('data')
-      
+    if(data.countries&&data.countries.length>0) {  
       form.value.countryList = data.countries.map(country => ({
         id: country.id,
         name: country.name,
@@ -103,12 +103,28 @@ async function fetchCountries() {
         states: country.states,
       }))
     }
-
-
-  } catch(error) {
-    console.error('Error fetching data:', error)
-  }
+  }).catch(error => {
+    console.error(error)
+  })
 }
+
+//Fetch Ministry
+const fetchMinistryFromApi = async () => {
+  allAdminActions.fetchMinistryFromApi({
+  }).then(response => {
+    const data=response.data
+    
+    form.value.ministry = data.ministry
+
+    if (data.ministry && data.ministry.length > 0) {
+      form.value.ministryList = data.ministry.map(ministry => ministry.ministry)
+    }
+
+  }).catch(error => {
+    console.error(error)
+  })
+}
+
 
 const register =    () => {
   
@@ -175,60 +191,42 @@ const register =    () => {
 
 }
 
-const fetchMinistryFromApi = async () => {
-  
-  try {
-    // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
-    const response = await api.get('/AllMinistry')
-    const data = response.data
+// 👉 FetchAll parish from state
+const fetchParishes = async () => {
+  if ((form.value.selectedState)) {
+    try{
+      form.value.parishList=[]
+      form.value.seletedParish='Select your parish'
 
-    // Set the ministry data to the form
-    // form.value.ministry = data.ministry
-    
-    // Handle the retrieved data as needed
-    // Assuming 'ministry' is the key for the array of ministries in the API response
+      const response = await allAdminActions.fetchStateParish(form.value.selectedParishState)
+      const data = response.data
+      if(data.Allparish&&data.Allparish.length>0) {
 
-    if (data.ministry && data.ministry.length > 0) {
-      form.value.ministryList = data.ministry.map(ministry => ministry.ministry)
-    }
-
-  } catch (error) {
-    console.error('Error fetching data:', error)
-  }
-}
-
-const fetchParishes = async selectedParishState => {
-  
-  try {
-    // Replace 'YOUR_API_ENDPOINT' with the actual API endpoint
-    const response = await api.get(`/getParishByState/${selectedParishState}`)
-    const data = response.data
-
-   
-    // Set the parishes data to the form
-    console.log(JSON.stringify(data))
-  
-    if(data.Allparish&&data.Allparish.length>0) {
-
-      form.value.parishList = data.Allparish.map(parish => ({
+        form.value.parishList = data.Allparish.map(parish => ({
         // parishcode: parish.parishcode,
-        parishname: parish.parishname,
-        country: parish.country,
-        states: parish.states,
-        city: parish.city,
-        parishaddress: parish.address,
-        name: parish.parishname,
-        parishcode: parish.parishcode,
-      }))
+          parishname: parish.parishname,
+          country: parish.country,
+          states: parish.states,
+          city: parish.city,
+          parishaddress: parish.address,
+          name: parish.parishname,
+          parishcode: parish.parishcode,
+        }))
+      }
+    
+
+    }catch (error) {
+      console('Error fetching data:')
     }
 
+ 
 
-   
 
-  } catch (error) {
-    console.error('Error fetching data:', error)
+
   }
 }
+
+
 
 const getTitleByGender = async getByGendervalue => {
   
@@ -260,12 +258,12 @@ const getTitleByGender = async getByGendervalue => {
 onMounted(() => {
   fetchMinistryFromApi()
   fetchCountries()
-  fetchParishes()
 })
 
 const  getResidentialState = () => {
   form.value.stateList = []
   form.value.selectedState = 'Select state of residence'
+
   if (form.value.selectedCountry) {
     form.value.getCountryById = form.value.countryList.find(country => country.id === form.value.selectedCountry)
   }
@@ -326,7 +324,7 @@ const  getStateParish = () => {
 
     const state=form.value.selectedParishState
 
-    fetchParishes(state)
+    fetchParishes()
   
   }
 }
@@ -642,6 +640,7 @@ const refetchData = hideOverlay => {
                       label="WhatsApp Phone number"
                       country-label="Country"
                       country-aria-label="Country for phone number"
+                      default-country="NG"
                       invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                     />
                   </VCol>
@@ -655,6 +654,7 @@ const refetchData = hideOverlay => {
                       label="Alternative Phone number"
                       country-label="Country"
                       country-aria-label="Country for phone number"
+                      default-country="NG"
                       invalid-message="Phone number must be a valid phone number, begin with country code (example: 01 23 45 67 89)."
                     />
                   </VCol>
@@ -671,14 +671,27 @@ const refetchData = hideOverlay => {
                     cols="12"
                     md="6"
                   >
-                    <AppCombobox
+                    <VAutocomplete
                       v-model="form.selectedCountry"
                       label="Country"
                       :items="form.countryList"
                       item-title="name"
                       item-value="id"
+                      density="compact"
+                      variant="outlined"
                       @change="getResidentialState"
-                    />
+                    >
+                      <template #item="{ props: listItemProp, item }">
+                        <VListItem v-bind="listItemProp">
+                          <template #prepend>
+                            <VAvatar
+                              :image="item.raw.flag_img"
+                              size="30"
+                            />
+                          </template>
+                        </VListItem>
+                      </template>
+                    </VAutocomplete>
                   
                     <!--
                       <pre>{{ form.countryList }}</pre>
@@ -712,7 +725,7 @@ const refetchData = hideOverlay => {
                     cols="12"
                     md="6"
                   >
-                    <AppSelect
+                    <VAutocomplete
                       v-model="form.selectedState"
                       label="State"
                       :items="form.stateList"
@@ -741,14 +754,38 @@ const refetchData = hideOverlay => {
                 </p>
                 <VRow>
                   <VCol cols="12">
-                    <AppCombobox
+                    <!--
+                      <AppCombobox
                       v-model="form.selectedchurchCountry"
                       label="Country"
                       :items="form.countryList"
                       item-title="name"
                       item-value="id"
                       @change="getChurchState"
-                    />
+                      />
+                    -->
+
+                    <AppCombobox
+                      v-model="form.selectedchurchCountry"
+                      label="Country"
+                      :items="form.countryList"
+                      item-title="name"
+                      item-value="id"
+                      density="compact"
+                      variant="outlined"
+                      @change="getChurchState"
+                    >
+                      <template #item="{ props: listItemProp, item }">
+                        <VListItem v-bind="listItemProp">
+                          <template #prepend>
+                            <VAvatar
+                              :image="item.raw.flag_img"
+                              size="30"
+                            />
+                          </template>
+                        </VListItem>
+                      </template>
+                    </AppCombobox>
                   </VCol>
 
                   <VCol

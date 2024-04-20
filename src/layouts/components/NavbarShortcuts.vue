@@ -1,5 +1,12 @@
 <script setup>
 const shortcuts = [
+
+  {
+    icon: 'tabler-calendar',
+    title: 'Events',
+    subtitle: 'scheduler',
+    to: { name: 'apps-addevent' },
+  },
   {
     icon: 'tabler-calendar',
     title: 'Calendar',

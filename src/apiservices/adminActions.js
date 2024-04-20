@@ -70,29 +70,16 @@ export const useAllAdminActions = defineStore('AllAdminActions', {
         // Fetch parish data based on the provided state name
       // Assuming the response contains parish data
 
-        const response = api.post('/AddParish', {
+        return await api.post('/AddParish', {
           postData,
-        }).then(response => {
-    
-    
-          console.log('Got Parish here register ', JSON.stringify(response.data))
-    
-        }).catch(e => {
-          // const { errors: formErrors } = e.response.data
-    
-          // errors.value = formErrors
-          // console.error(e.response.data)
         })
-
-
-        console.log(data)
       } catch (error) {
-        // throw new Error('Failed to fetch parish by state')
+        throw new Error('Failed to fetch parish by state')
       }
 
     },
   
-
+    fetchMinistryFromApi(params) { return api.get('/AllMinistry', { params }) },
 
   },
 })

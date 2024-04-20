@@ -16,6 +16,15 @@ const isAddPermissionDialogVisible = ref(false)
 const permissionName = ref('')
 const isCreateParishVisible = ref(false)
 const isEditParishVisible = ref(false)
+let parishData = ref([])
+
+const openEditParishDialog = parish => {
+  // Set the clicked parish data to a variable accessible by the EditParishDialog component
+  parishData.value =  parish.raw
+
+  // Open the edit dialog
+  isEditParishVisible.value = true
+}
 
 
 
@@ -28,20 +37,6 @@ const options = ref({
 })
 
 
-const parishData = {
-  // id: 110,
-  // email: 'bidemi12222@yahoo.com',
-  // phone1: '+2349034534343',
-  // phone2: '2349099756654',
-  // country: 'Nigeria',
-  // states: 'Lagos',
-  // city: 'Agege',
-  // address: 'Address',
-  // parishname: 'test testing',
-  parishcode: 'LA02',
-
-  // avatar: '',
-}
 
 // Retrieve stored data from local storage on component mount
 // const storedData = JSON.parse(localStorage.getItem('tableData') || '[]')
@@ -89,30 +84,27 @@ const headers = [
     value: 'country',
   },
   {
+    title: 'State',
+    key: 'states',
+  },
+
+  {
+    title: 'City',
+    key: 'city',
+  },
+  {
     title: 'email',
     value: 'email',
   },
   
-  // {
-  //   title: 'email',
-  //   key: 'email',
-  // },
-
-  // {
-  //   title: 'Role',
-  //   key: 'role',
-  // },
+  {
+    title: 'Category',
+    key: 'category',
+  },
 
  
 
-  // {
-  //   title: 'Billing',
-  //   key: 'billing',
-  // },
-  // {
-  //   title: 'Status',
-  //   key: 'status',
-  // },
+
   {
     title: 'Actions',
     key: 'actions',
@@ -133,7 +125,6 @@ const fetchAllParish = () => {
 
     // Store data in local storage
     // localStorage.setItem('tableData', JSON.stringify(response.data.users))
-    console.log('<======Parish Data Live=====>', response)
     totalPage.value = response.data.totalPage
     totalParish.value = response.data.totalParish
     options.value.page = response.data.page
@@ -190,37 +181,43 @@ const status = [
   },
 ]
 
-const resolveUserRoleVariant = role => {
-  const roleLowerCase = role.toLowerCase()
-  if (roleLowerCase === 'subscriber')
+const resolveUserRoleVariant = category => {
+  const roleLowerCase = category.toLowerCase()
+  if (roleLowerCase === 'national')
     return {
       color: 'warning',
-      icon: 'tabler-circle-check',
+      icon: 'custom-home',
     }
-  if (roleLowerCase === 'author')
+  if (roleLowerCase === 'state')
     return {
       color: 'success',
-      icon: 'tabler-user',
+      icon: 'custom-home',
     }
-  if (roleLowerCase === 'maintainer')
+  if (roleLowerCase === 'area')
     return {
       color: 'primary',
-      icon: 'tabler-chart-pie-2',
+      icon: 'custom-home',
     }
-  if (roleLowerCase === 'editor')
+  if (roleLowerCase === 'province')
     return {
       color: 'info',
-      icon: 'tabler-edit',
+      icon: 'custom-home',
     }
-  if (roleLowerCase === 'admin')
+  if (roleLowerCase === 'circuit')
     return {
       color: 'secondary',
-      icon: 'tabler-device-laptop',
+      icon: 'custom-home',
+    }
+
+  if (roleLowerCase === 'district')
+    return {
+      color: 'secondary',
+      icon: 'custom-home',
     }
   
   return {
     color: 'primary',
-    icon: 'tabler-user',
+    icon: 'custom-home',
   }
 }
 
@@ -473,19 +470,19 @@ const editPermission = name => {
             </template>
 
             <!-- 👉 Role -->
-            <template #item.role="{ item }">
+            <template #item.category="{ item }">
               <div class="d-flex align-center gap-4">
                 <VAvatar
                   :size="30"
-                  :color="resolveUserRoleVariant(item.raw.role).color"
+                  :color="resolveUserRoleVariant(item.raw.category).color"
                   variant="tonal"
                 >
                   <VIcon
                     :size="20"
-                    :icon="resolveUserRoleVariant(item.raw.role).icon"
+                    :icon="resolveUserRoleVariant(item.raw.category).icon"
                   />
                 </VAvatar>
-                <span class="text-capitalize">{{ item.raw.role }}</span>
+                <span class="text-capitalize">{{ item.raw.category }}</span>
               </div>
             </template>
 
@@ -495,14 +492,14 @@ const editPermission = name => {
             </template>
 
             <!-- Status -->
-            <template #item.status="{ item }">
+            <template #item.city="{ item }">
               <VChip
-                :color="resolveUserStatusVariant(item.raw.status)"
+                :color="resolveUserStatusVariant(item.raw.city)"
                 size="small"
                 label
                 class="text-capitalize"
               >
-                {{ item.raw.status }}
+                {{ item.raw.city }}
               </VChip>
             </template>
 
@@ -517,7 +514,7 @@ const editPermission = name => {
                 size="small"
                 color="medium-emphasis"
                 variant="text"
-                @click="isEditParishVisible = !isEditParishVisible"
+                @click="openEditParishDialog(item)"
               >
                 <VIcon
                   size="22"
@@ -591,11 +588,15 @@ const editPermission = name => {
 
         <!-- 👉 Edit parish dialog -->
         <VCol
+         
           cols="12"
           sm="6"
           md="4"
         >
-         cc
+          <EditParishDialog
+            v-model:is-dialog-visible="isEditParishVisible"
+            :parish-data="parishData"
+          />
         </VCol>
       </vcol>
     </vrow>
